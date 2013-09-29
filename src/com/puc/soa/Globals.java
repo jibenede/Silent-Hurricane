@@ -6,7 +6,7 @@ public class Globals {
     public static final int BOSS_SIZE_Y = 150;
     public static final int LASER_SIZE = 8;
 
-    public static final int MAX_SPEED = 400;
+    public static final int MAX_SPEED = 600;
 
     public static final int BULLET_LIMIT = 1000;
     public static final int ENEMY_LIMIT = 100;
