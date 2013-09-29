@@ -40,6 +40,7 @@ public class Stage1 extends Stage {
 		BossA boss = new BossA(context, state, assets, 1000);
 		addFoeAtTime(boss, 45000);
 
+		prepare();
 	}
 
 	@Override

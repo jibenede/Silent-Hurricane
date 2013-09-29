@@ -1,60 +1,62 @@
 package com.puc.sh.model;
 
-import com.puc.soa.Globals;
-import com.puc.soa.utils.Utilities;
-
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.TypedValue;
+import android.graphics.PointF;
 
-public class Animation 
-{
-	private Bitmap[] frames;
-	
-	private int currentFrame;
-	private long timeOfFirstFrame;
-	private boolean finished;
-	
-	public Animation(Bitmap bitmap, int x, int y, Context context)
-	{
-		frames = new Bitmap[x * y];
-		for(int i = 0; i < x; i++)
-		{
-			for (int j = 0; j < y; j++)
-			{
-				Bitmap bmp = Bitmap.createBitmap(bitmap,  j * (bitmap.getWidth() / x), i * (bitmap.getHeight() / y), 
-						bitmap.getWidth() / x, bitmap.getHeight() / y);
-				int dim = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 64, context.getResources().getDisplayMetrics());
-				bmp = Bitmap.createScaledBitmap(bmp, dim, dim, false);
-				frames[i*x + j] = bmp;
-			}
-			
+public class Animation implements Renderable {
+	private Bitmap[] mFrames;
+	private int mFrameInterval;
+
+	private int mCurrentFrame;
+	private long mTimer;
+	private boolean mFinished;
+
+	public PointF mPosition;
+
+	public Animation(Context context, Bitmap[] frames, int frameInterval, float x, float y) {
+		mFrames = frames;
+		mFrameInterval = frameInterval;
+		mPosition = new PointF();
+		mPosition.x = x;
+		mPosition.y = y;
+	}
+
+	public void prepare() {
+		mCurrentFrame = 0;
+		mTimer = 0;
+		mFinished = false;
+	}
+
+	public void update(long interval) {
+		mTimer += interval;
+		if (mTimer > mFrameInterval) {
+			mCurrentFrame++;
+			mTimer -= mFrameInterval;
 		}
-		
+		if (mCurrentFrame >= mFrames.length) {
+			mFinished = true;
+		}
 	}
-	
-	public void prepare()
-	{
-		currentFrame = 0;
-		timeOfFirstFrame = System.currentTimeMillis();
-		finished = false;
-	}
-	
-	public Bitmap getFrame()
-	{
-		currentFrame = (int) ((System.currentTimeMillis() - timeOfFirstFrame)/50);
 
-		if (currentFrame >= frames.length)
-			return null;
-		else
-			return frames[currentFrame];
+	public Bitmap getFrame() {
+		return mFrames[mCurrentFrame];
 	}
-	
-	public boolean isFinished()
-	{
-		return finished;
+
+	public boolean isFinished() {
+		return mFinished;
 	}
-	
-	
+
+	public boolean isOnScreen() {
+		return !mFinished;
+	}
+
+	public int getFrameHeight() {
+		return mFrames[0].getHeight();
+	}
+
+	public int getFrameWidth() {
+		return mFrames[0].getWidth();
+	}
 
 }

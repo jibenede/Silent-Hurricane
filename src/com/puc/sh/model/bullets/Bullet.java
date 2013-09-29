@@ -1,83 +1,118 @@
 package com.puc.sh.model.bullets;
 
-import com.puc.sh.model.Sprite;
+import android.graphics.Bitmap;
+import android.graphics.PointF;
 
-public class Bullet extends Sprite {
+public class Bullet {
+	public enum BulletShape {
+		Round, Square
+	}
+
 	public enum BulletType {
-		Plasma, Laser1, Laser2, Laser3
+		Linear, Cluster, Curve, TwoStep
 	};
 
-	private boolean benign;
+	public boolean mBenign;
 
-	private float speedX;
-	private float speedY;
-	private long lifetime;
-	private BulletType type;
+	private float mSpeedX;
+	private float mSpeedY;
+	private long mLifetime;
+	public BulletType mType;
+	public BulletShape mShape;
+
+	public PointF mPosition;
+	public boolean mDisplay;
+
+	public float mSize;
+	public float mSize2;
+
+	public Bitmap mBitmap;
+
+	public int mFirepower;
+
+	public Bullet() {
+		mPosition = new PointF();
+	}
 
 	public void initializeBullet(Bullet b/*
 										 * boolean benign, float speedX, float
 										 * speedY, PointF position, long
 										 * lifetime, BulletType type
 										 */) {
-		this.benign = b.benign;
-		this.speedX = b.speedX;
-		this.speedY = b.speedY;
-		this.positionX = b.positionX;
-		this.positionY = b.positionY;
-		this.lifetime = b.lifetime;
-		this.type = b.type;
-		this.render = true;
+		mBenign = b.mBenign;
+		mSpeedX = b.mSpeedX;
+		mSpeedY = b.mSpeedY;
+		mPosition.x = b.mPosition.x;
+		mPosition.y = b.mPosition.y;
+		mLifetime = b.mLifetime;
+		mType = b.mType;
+		mShape = b.mShape;
+		mDisplay = b.mDisplay;
 
-		this.sizeX = b.sizeX;
-		this.sizeY = b.sizeY;
+		mSize = b.mSize;
+		mSize2 = b.mSize2;
+
+		mBitmap = b.mBitmap;
+		mFirepower = b.mFirepower;
 	}
 
-	public void initializeBullet(boolean benign, float speedX, float speedY, float positionX,
-			float positionY, long lifetime, BulletType type, float sizeX, float sizeY) {
-		this.benign = benign;
-		this.speedX = speedX;
-		this.speedY = speedY;
-		this.positionX = positionX;
-		this.positionY = positionY;
-		this.lifetime = lifetime;
-		this.type = type;
-		this.render = true;
+	/**
+	 * 
+	 * @param bitmap
+	 *            The bitmap graphic associated with this bullet.
+	 * @param benign
+	 *            {@code true} if this bullet should harm foes, {@code false} if
+	 *            it should harm the player
+	 * @param speedX
+	 *            The speed along the X axis of this bullet.
+	 * @param speedY
+	 *            The speed along the Y axis of this bullet.
+	 * @param positionX
+	 *            The starting X position.
+	 * @param positionY
+	 *            The starting Y position.
+	 * @param lifetime
+	 *            The amount of milliseconds this bullet should remain in memory
+	 *            before being collected by the engine. This parameter is vital
+	 *            for optimization purposes.
+	 * @param size
+	 *            The size of this bullet. For collisions, this would be the
+	 *            radius of the bounding circle.
+	 * @param firepower
+	 */
+	public void initializeLinearBullet(Bitmap bitmap, boolean benign, float speedX, float speedY,
+			float positionX, float positionY, long lifetime, float size, int firepower) {
+		mType = BulletType.Linear;
+		mShape = BulletShape.Round;
 
-		this.sizeX = sizeX;
-		this.sizeY = sizeY;
+		mBenign = benign;
+		mSpeedX = speedX;
+		mSpeedY = speedY;
+		mPosition.x = positionX;
+		mPosition.y = positionY;
+		mLifetime = lifetime;
+		mDisplay = true;
+		mFirepower = firepower;
+
+		mSize = mSize2 = size;
+
+		mBitmap = bitmap;
 	}
 
 	public void update(long interval) {
-		if (this.render) {
-			lifetime -= interval;
-			if (lifetime <= 0)
-				this.render = false;
+		if (mDisplay) {
+			mLifetime -= interval;
+			if (mLifetime <= 0) {
+				mDisplay = false;
+			}
 
-			this.positionX += this.speedX * interval / 1000;
-			this.positionY += this.speedY * interval / 1000;
+			mPosition.x += mSpeedX * interval / 1000;
+			mPosition.y += mSpeedY * interval / 1000;
 		}
-	}
-
-	public BulletType getType() {
-		return this.type;
-	}
-
-	public boolean isBenign() {
-		return this.benign;
 	}
 
 	public int getFirepower() {
 		return 1;
-	}
-
-	@Override
-	public float getX() {
-		return positionX - sizeX / 2;
-	}
-
-	@Override
-	public float getY() {
-		return positionY - sizeY / 2;
 	}
 
 }

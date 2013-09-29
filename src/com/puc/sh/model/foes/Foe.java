@@ -8,12 +8,13 @@ import android.graphics.Rect;
 import android.view.Display;
 import android.view.WindowManager;
 
+import com.puc.sh.model.Renderable;
 import com.puc.sh.model.bullets.Bullet;
 import com.puc.soa.AssetsHolder;
 import com.puc.soa.GameState;
 import com.puc.soa.utils.BulletArray;
 
-public abstract class Foe {
+public abstract class Foe implements Renderable {
 	protected Context mContext;
 	protected GameState mState;
 	protected AssetsHolder mAssets;
@@ -47,25 +48,19 @@ public abstract class Foe {
 
 	public abstract PointF getPosition();
 
-	public float getX() {
-		return getPosition().x - getBitmap().getWidth() / 2;
-	}
-
-	public float getY() {
-		return getPosition().y - getBitmap().getHeight() / 2;
-	}
-
 	public void update(long interval) {
-		updatePosition(interval);
-		fireBullets(interval);
-		hitTest();
+		if (isOnScreen()) {
+			updatePosition(interval);
+			fireBullets(interval);
+			hitTest();
+		}
 	}
 
 	public abstract Bitmap getBitmap();
 
 	public abstract float getAngle();
 
-	public abstract boolean isGone();
+	public abstract boolean isOnScreen();
 
 	protected abstract void updatePosition(long interval);
 
@@ -75,9 +70,9 @@ public abstract class Foe {
 		for (int i = 0; i < bullets.size(); i++) {
 			b = bullets.getBullet(i);
 
-			if (b.isBenign() && b.getRender() && collidesWith(b)) {
+			if (b.mBenign && b.mDisplay && collidesWith(b)) {
 				mHp -= b.getFirepower();
-				b.render = false;
+				b.mDisplay = false;
 			}
 		}
 	}

@@ -9,160 +9,181 @@ import android.util.TypedValue;
 import android.view.WindowManager;
 
 import com.puc.sh.model.bullets.Bullet;
-import com.puc.sh.model.bullets.Bullet.BulletType;
+import com.puc.sh.model.bullets.CollisionUtils;
 import com.puc.soa.AssetsHolder;
 import com.puc.soa.GameState;
 import com.puc.soa.Globals;
 import com.puc.soa.utils.BulletArray;
 
 public class Player {
-    private Context context;
+	public enum PlayerState {
+		ALIVE, DEAD, REVIVING, DEFEATED
+	}
 
-    private boolean alive;
-    private int bulletSize;
+	public static final int BULLET_INTERVAL = 200;
+	public static final int TIME_FOR_REVIVAL = 2000;
+	public static final int TIME_OF_INVULNERABILITY = 3000;
 
-    private PointF shipPosition;
-    private PointF shipDestination;
+	private Context mContext;
+	private int mStartX;
+	private int mStartY;
 
-    private int life;
-    private int timeSinceLastBullet;
-    private int timeSinceDeath;
-    private Bitmap mBitmap;
+	public PlayerState mStatus;
 
-    private BulletArray bulletArray;
-    private Bullet b;
+	public PointF mShipPosition;
+	private PointF shipDestination;
 
-    private AssetsHolder mAssets;
-    private GameState mState;
+	private int mLives;
+	private int timeSinceLastBullet;
+	public Bitmap mBitmap;
 
-    public Player(Context context, GameState state, AssetsHolder assets) {
-        this.context = context;
-        mState = state;
-        mAssets = assets;
+	private BulletArray bulletArray;
+	private Bullet b;
 
-        WindowManager wm = (WindowManager) context
-                .getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics displaymetrics = new DisplayMetrics();
-        wm.getDefaultDisplay().getMetrics(displaymetrics);
-        int height = displaymetrics.heightPixels;
-        int width = displaymetrics.widthPixels;
-        mBitmap = assets.ship;
+	private AssetsHolder mAssets;
+	private GameState mState;
 
-        int shipX = (width - mBitmap.getWidth()) / 2;
-        int shipY = height - mBitmap.getHeight() - 50;
-        shipPosition = new PointF(shipX, shipY);
-        shipDestination = new PointF(-1, -1);
+	private long mTimeOfLastRebirth;
+	private long mTimeOfLastDeath;
 
-        this.life = 10;
-        this.timeSinceLastBullet = 0;
-        this.bulletArray = mState.getBullets();
-        this.b = new Bullet();
+	public Player(Context context, GameState state, AssetsHolder assets) {
+		mContext = context;
+		mState = state;
+		mAssets = assets;
 
-        this.bulletSize = 32;
+		WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+		DisplayMetrics displaymetrics = new DisplayMetrics();
+		wm.getDefaultDisplay().getMetrics(displaymetrics);
+		int height = displaymetrics.heightPixels;
+		int width = displaymetrics.widthPixels;
+		mBitmap = assets.ship;
 
-        this.alive = true;
-    }
+		mStartX = (width - mBitmap.getWidth()) / 2;
+		mStartY = height - mBitmap.getHeight() - 50;
+		mShipPosition = new PointF(mStartX, mStartY);
+		shipDestination = new PointF(-1, -1);
 
-    public Bitmap getBitmap() {
-        return mBitmap;
-    }
+		mLives = Globals.DEFAULT_LIVES;
 
-    public void update(long interval) {
-        if (this.alive) {
-            this.updateShipPosition(interval);
+		this.timeSinceLastBullet = 0;
+		this.bulletArray = mState.getBullets();
+		this.b = new Bullet();
 
-            timeSinceLastBullet += interval;
-            if (timeSinceLastBullet > Globals.BULLET_INTERVAL) {
-                timeSinceLastBullet = 0;
-                this.fireBullets();
-            }
+		mStatus = PlayerState.ALIVE;
+	}
 
-            if (this.hitTest())
-                this.die();
-        } else
-            timeSinceDeath += interval;
-    }
+	public boolean shouldDraw() {
+		if (mStatus == PlayerState.ALIVE) {
+			return true;
+		} else if (mStatus == PlayerState.REVIVING) {
+			// Flicker effect every 250 ms when reviving.
+			if (((System.currentTimeMillis() - mTimeOfLastRebirth) / 100) % 2 == 0) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-    private void die() {
-        this.alive = false;
-    }
+	public void update(long interval) {
+		if (mStatus == PlayerState.ALIVE || mStatus == PlayerState.REVIVING) {
+			this.updateShipPosition(interval);
 
-    private void fireBullets() {
-        float x = shipPosition.x + mBitmap.getWidth() / 2;
+			timeSinceLastBullet += interval;
+			if (timeSinceLastBullet > BULLET_INTERVAL) {
+				timeSinceLastBullet = 0;
+				this.fireBullets();
+			}
 
-        b.initializeBullet(true, -50, Globals.SHIP_BULLET_Y_SPEED, x,
-                shipPosition.y, 3000, BulletType.Plasma, this.bulletSize,
-                this.bulletSize);
-        bulletArray.addBullet(b);
+			if (mStatus == PlayerState.ALIVE && this.hitTest()) {
+				this.die();
+			}
 
-        b.initializeBullet(true, 0, Globals.SHIP_BULLET_Y_SPEED, x,
-                shipPosition.y, 3000, BulletType.Plasma, this.bulletSize,
-                this.bulletSize);
-        bulletArray.addBullet(b);
+			if (mStatus == PlayerState.REVIVING
+					&& System.currentTimeMillis() - mTimeOfLastRebirth > TIME_OF_INVULNERABILITY) {
+				mStatus = PlayerState.ALIVE;
+			}
 
-        b.initializeBullet(true, 50, Globals.SHIP_BULLET_Y_SPEED, x,
-                shipPosition.y, 3000, BulletType.Plasma, this.bulletSize,
-                this.bulletSize);
-        bulletArray.addBullet(b);
-    }
+		} else if (mStatus == PlayerState.DEAD) {
+			if (System.currentTimeMillis() - mTimeOfLastDeath > TIME_FOR_REVIVAL) {
+				mShipPosition.x = mStartX;
+				mShipPosition.y = mStartY;
 
-    public void setDestination(int x, int y) {
-        int deltaY = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 80, context.getResources()
-                        .getDisplayMetrics());
-        if (x != -1 && y != -1)
-            shipDestination.set(x - mBitmap.getWidth() / 4, y - deltaY);
-        else
-            shipDestination.set(x, y);
-    }
+				mStatus = PlayerState.REVIVING;
+				mTimeOfLastRebirth = System.currentTimeMillis();
+			}
+		}
+	}
 
-    public PointF getShipPosition() {
-        return this.shipPosition;
-    }
+	private void die() {
+		mStatus = PlayerState.DEAD;
+		mLives--;
+		if (mLives <= 0) {
+			mStatus = PlayerState.DEFEATED;
+		}
 
-    public boolean isAlive() {
-        return this.alive;
-    }
+		Animation a = new Animation(mContext, mAssets.death, 50, mShipPosition.x
+				+ mBitmap.getWidth() / 2 - mAssets.death[0].getWidth() / 2, mShipPosition.y
+				+ mBitmap.getHeight() / 2 - mAssets.death[0].getHeight() / 2);
+		a.prepare();
+		mState.mAnimations.add(a);
 
-    private void updateShipPosition(long interval) {
-        if (shipDestination.x != -1 && shipDestination.y != -1) {
-            float xDelta = shipDestination.x - shipPosition.x;
-            float yDelta = shipDestination.y - shipPosition.y;
+		mTimeOfLastDeath = System.currentTimeMillis();
+	}
 
-            float delta = FloatMath.sqrt(xDelta * xDelta + yDelta * yDelta);
+	private void fireBullets() {
+		float x = mShipPosition.x + mBitmap.getWidth() / 2 - 16;
 
-            float xSpeed = delta < 1 ? 0 : xDelta / delta * Globals.MAX_SPEED
-                    * interval / 1000;
-            float ySpeed = delta < 1 ? 0 : yDelta / delta * Globals.MAX_SPEED
-                    * interval / 1000;
+		b.initializeLinearBullet(mAssets.plasma, true, -50, -1000, x, mShipPosition.y, 2000, 32, 1);
+		bulletArray.addBullet(b);
 
-            if (xDelta >= 0)
-                shipPosition.x += Math.min(xSpeed, xDelta);
-            else
-                shipPosition.x += Math.max(xSpeed, xDelta);
+		b.initializeLinearBullet(mAssets.plasma, true, 0, -1000, x, mShipPosition.y, 2000, 32, 1);
+		bulletArray.addBullet(b);
 
-            if (yDelta >= 0)
-                shipPosition.y += Math.min(ySpeed, yDelta);
-            else
-                shipPosition.y += Math.max(ySpeed, yDelta);
-        }
-    }
+		b.initializeLinearBullet(mAssets.plasma, true, 50, -1000, x, mShipPosition.y, 2000, 32, 1);
+		bulletArray.addBullet(b);
+	}
 
-    private boolean hitTest() {
-        Bullet b;
+	public void setDestination(int x, int y) {
+		int deltaY = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, mContext
+				.getResources().getDisplayMetrics());
+		if (x != -1 && y != -1)
+			shipDestination.set(x - mBitmap.getWidth() / 4, y - deltaY);
+		else
+			shipDestination.set(x, y);
+	}
 
-        float hitboxX = this.shipPosition.x + mBitmap.getWidth() / 2;
-        float hitboxY = this.shipPosition.y + mBitmap.getHeight() / 2;
-        for (int i = 0; i < this.bulletArray.size(); i++) {
-            b = this.bulletArray.getBullet(i);
+	private void updateShipPosition(long interval) {
+		if (shipDestination.x != -1 && shipDestination.y != -1) {
+			float xDelta = shipDestination.x - mShipPosition.x;
+			float yDelta = shipDestination.y - mShipPosition.y;
 
-            if (!b.isBenign() && b.getX() < hitboxX
-                    && b.getX() + b.getSizeX() > hitboxX && b.getY() < hitboxY
-                    && b.getY() + b.getSizeY() > hitboxY) {
-                return true;
-            }
-        }
-        return false;
-    }
+			float delta = FloatMath.sqrt(xDelta * xDelta + yDelta * yDelta);
+
+			float xSpeed = delta < 1 ? 0 : xDelta / delta * Globals.MAX_SPEED * interval / 1000;
+			float ySpeed = delta < 1 ? 0 : yDelta / delta * Globals.MAX_SPEED * interval / 1000;
+
+			if (xDelta >= 0)
+				mShipPosition.x += Math.min(xSpeed, xDelta);
+			else
+				mShipPosition.x += Math.max(xSpeed, xDelta);
+
+			if (yDelta >= 0)
+				mShipPosition.y += Math.min(ySpeed, yDelta);
+			else
+				mShipPosition.y += Math.max(ySpeed, yDelta);
+		}
+	}
+
+	private boolean hitTest() {
+		Bullet b;
+		for (int i = 0; i < this.bulletArray.size(); i++) {
+			b = this.bulletArray.getBullet(i);
+
+			if (!b.mBenign && CollisionUtils.playerBulletCollide(this, b)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 }

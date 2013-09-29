@@ -6,7 +6,7 @@ import android.graphics.PointF;
 import android.util.FloatMath;
 
 import com.puc.sh.model.bullets.Bullet;
-import com.puc.sh.model.bullets.Bullet.BulletType;
+import com.puc.sh.model.bullets.CollisionUtils;
 import com.puc.soa.AssetsHolder;
 import com.puc.soa.GameState;
 
@@ -24,6 +24,7 @@ public class StalkerA extends Foe {
 	private Bitmap mBitmap;
 	private float mAngle;
 	private Origin mOrigin;
+	private float mShipRadius;
 
 	private final int PADDING = 50;
 	private final int SPEED = 600;
@@ -31,7 +32,7 @@ public class StalkerA extends Foe {
 	private final int FIRING_INTERVAL = 500;
 	private final int BULLET_SPEED = 300;
 
-	private int radius;
+	private int mRadius;
 
 	private long mTimeUntilNextShot;
 
@@ -44,13 +45,13 @@ public class StalkerA extends Foe {
 			mPosition = new PointF(mSize.x - PADDING, mSize.y + PADDING);
 		}
 		mPhase = State.GOING_UP;
-		radius = mSize.x / 2 - 50;
+		mRadius = mSize.x / 2 - 50;
 		mAngle = 0;
 		mBitmap = assets.stalkerA;
 		mOrigin = origin;
 
 		mTimeUntilNextShot = 1000;
-
+		mShipRadius = mBitmap.getWidth() / 2;
 	}
 
 	@Override
@@ -69,19 +70,14 @@ public class StalkerA extends Foe {
 	}
 
 	@Override
-	public boolean isGone() {
-		return mHp <= 0 || (mPhase == State.GOING_DOWN && mPosition.y > mSize.y + 100);
+	public boolean isOnScreen() {
+		return mHp > 0 && !(mPhase == State.GOING_DOWN && mPosition.y > mSize.y + 100);
 	}
 
 	@Override
 	public boolean collidesWith(Bullet b) {
-		sFoeRect.set((int) mPosition.x, (int) mPosition.y,
-				(int) (mPosition.x + mBitmap.getWidth()), (int) (mPosition.y + mBitmap.getHeight()));
-
-		sBulletRect.set((int) b.getX(), (int) b.positionY, (int) (b.positionX + b.sizeX),
-				(int) (b.positionY + b.sizeY));
-
-		return sFoeRect.intersect(sBulletRect);
+		return CollisionUtils.circleCollide(mPosition.x, mPosition.y, mShipRadius, b.mPosition.x,
+				b.mPosition.y, b.mSize);
 
 	}
 
@@ -89,15 +85,15 @@ public class StalkerA extends Foe {
 	protected void updatePosition(long interval) {
 		if (mPhase == State.GOING_UP) {
 			mPosition.y -= (SPEED * interval) / 1000;
-			if (mPosition.y < radius + PADDING) {
-				mPosition.y = radius + PADDING;
+			if (mPosition.y < mRadius + PADDING) {
+				mPosition.y = mRadius + PADDING;
 				mPhase = State.ROTATING;
 			}
 		} else if (mPhase == State.ROTATING) {
 			if (mOrigin == Origin.BOTTOM_LEFT) {
-				mAngle += ((float) SPEED / radius) * (interval / 1000.0);
+				mAngle += ((float) SPEED / mRadius) * (interval / 1000.0);
 			} else if (mOrigin == Origin.BOTTOM_RIGHT) {
-				mAngle -= ((float) SPEED / radius) * (interval / 1000.0);
+				mAngle -= ((float) SPEED / mRadius) * (interval / 1000.0);
 			}
 
 			if (mOrigin == Origin.BOTTOM_LEFT && mAngle > Math.PI || mOrigin == Origin.BOTTOM_RIGHT
@@ -107,11 +103,11 @@ public class StalkerA extends Foe {
 			}
 
 			if (mOrigin == Origin.BOTTOM_LEFT) {
-				mPosition.x = -FloatMath.cos(mAngle) * radius + mSize.x / 2;
-				mPosition.y = (PADDING + radius) - FloatMath.sin(mAngle) * radius;
+				mPosition.x = -FloatMath.cos(mAngle) * mRadius + mSize.x / 2;
+				mPosition.y = (PADDING + mRadius) - FloatMath.sin(mAngle) * mRadius;
 			} else if (mOrigin == Origin.BOTTOM_RIGHT) {
-				mPosition.x = FloatMath.cos(mAngle) * radius + mSize.x / 2;
-				mPosition.y = (PADDING + radius) + FloatMath.sin(mAngle) * radius;
+				mPosition.x = FloatMath.cos(mAngle) * mRadius + mSize.x / 2;
+				mPosition.y = (PADDING + mRadius) + FloatMath.sin(mAngle) * mRadius;
 			}
 
 		} else if (mPhase == State.GOING_DOWN) {
@@ -124,14 +120,14 @@ public class StalkerA extends Foe {
 	public void fireBullets(long interval) {
 		mTimeUntilNextShot -= interval;
 		if (mTimeUntilNextShot < 0) {
-			float vX = mState.getShipPosition().x - mPosition.x;
-			float vY = mState.getShipPosition().y - mPosition.y;
+			float vX = mState.mShip.mShipPosition.x - mPosition.x;
+			float vY = mState.mShip.mShipPosition.y - mPosition.y;
 			float factor = FloatMath.sqrt(vX * vX + vY * vY) / BULLET_SPEED;
 			vX /= factor;
 			vY /= factor;
 
-			sBullet.initializeBullet(false, (int) vX, (int) vY, mPosition.x + mBitmap.getWidth()
-					/ 2, mPosition.y + mBitmap.getHeight() / 2, 6000, BulletType.Laser1, 12, 12);
+			sBullet.initializeLinearBullet(mAssets.laser1, false, (int) vX, (int) vY, mPosition.x
+					+ mBitmap.getWidth() / 2, mPosition.y + mBitmap.getHeight() / 2, 6000, 12, 1);
 			mState.bullets.addBullet(sBullet);
 
 			mTimeUntilNextShot = FIRING_INTERVAL;
