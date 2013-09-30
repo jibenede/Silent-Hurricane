@@ -17,15 +17,18 @@ import com.puc.sh.model.bullets.AnimationUtils;
 
 public class AssetsHolder {
 	public Bitmap ship;
-	public Bitmap plasma;
+
 	public Bitmap boss;
 
 	public Bitmap stalkerA;
 	public Bitmap predatorA;
 
+	// Bullet sprites
+	public Bitmap plasma;
 	public Bitmap laser1;
 	public Bitmap laser2;
 	public Bitmap laser3;
+	public Bitmap fireball;
 
 	public Bitmap mainBackground;
 	public Bitmap stageBackground;
@@ -77,6 +80,10 @@ public class AssetsHolder {
 			is = manager.open("images/laser3.png");
 			original = BitmapFactory.decodeStream(is);
 			laser3 = Bitmap.createScaledBitmap(original, 12, 12, false);
+
+			is = manager.open("images/fireball.png");
+			original = BitmapFactory.decodeStream(is);
+			fireball = Bitmap.createScaledBitmap(original, 24, 24, false);
 
 			is = manager.open("images/stalker_a.png");
 			original = BitmapFactory.decodeStream(is);

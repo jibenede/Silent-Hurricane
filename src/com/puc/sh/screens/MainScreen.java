@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.Log;
 import android.view.MotionEvent;
 
 import com.puc.sh.model.Widget;
@@ -78,7 +77,6 @@ public class MainScreen extends Screen {
 	public void update(long interval) {
 		if (mFading) {
 			mAlpha -= (255.0 * interval / mFadeDuration);
-			Log.i("Game", "Alpha: " + mAlpha);
 			if (mAlpha <= 0) {
 				mAlpha = 0;
 				mFading = false;

@@ -50,6 +50,7 @@ public abstract class Foe implements Renderable {
 
 	public void update(long interval) {
 		if (isOnScreen()) {
+			updatePattern();
 			updatePosition(interval);
 			fireBullets(interval);
 			hitTest();
@@ -83,5 +84,16 @@ public abstract class Foe implements Renderable {
 
 	public boolean isBoss() {
 		return false;
+	}
+
+	public void bomb() {
+		if (isBoss()) {
+			mHp -= 50;
+		} else {
+			mHp = 0;
+		}
+	}
+
+	protected void updatePattern() {
 	}
 }

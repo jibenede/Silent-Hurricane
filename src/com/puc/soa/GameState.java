@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.puc.sh.model.Player;
 import com.puc.sh.model.Player.PlayerState;
+import com.puc.sh.model.foes.Foe;
 import com.puc.soa.utils.BulletArray;
 import com.puc.soa.utils.CircularArray;
 
@@ -15,7 +16,7 @@ public class GameState {
 
 	private int mPlayerBombs;
 
-	public BulletArray bullets;
+	public BulletArray mBullets;
 	public CircularArray mEnemies;
 	public CircularArray mAnimations;
 
@@ -25,11 +26,12 @@ public class GameState {
 
 		mPlayerBombs = Globals.DEFAULT_BOMBS;
 
-		this.bullets = new BulletArray(Globals.BULLET_LIMIT);
+		mBullets = new BulletArray(Globals.BULLET_LIMIT);
 		mShip = new Player(context, this, assets);
 
 		mEnemies = new CircularArray(Globals.ENEMY_LIMIT);
 		mAnimations = new CircularArray(Globals.ANIMATIONS_LIMIT);
+
 	}
 
 	public void setDestination(int x, int y) {
@@ -43,8 +45,8 @@ public class GameState {
 			mEnemies.get(i).update(interval);
 		}
 
-		for (int i = 0; i < this.bullets.size(); i++) {
-			this.bullets.getBullet(i).update(interval);
+		for (int i = 0; i < mBullets.size(); i++) {
+			mBullets.getBullet(i).update(interval);
 		}
 
 		for (int i = 0; i < mAnimations.size(); i++) {
@@ -52,12 +54,19 @@ public class GameState {
 		}
 
 		mEnemies.clean();
-		this.bullets.clean();
+		mBullets.clean();
 		mAnimations.clean();
 	}
 
+	public void detonateBomb() {
+		mBullets.emptyArray();
+		for (int i = 0; i < mEnemies.size(); i++) {
+			((Foe) mEnemies.get(i)).bomb();
+		}
+	}
+
 	public BulletArray getBullets() {
-		return this.bullets;
+		return mBullets;
 	}
 
 	public CircularArray getEnemies() {

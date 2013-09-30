@@ -34,6 +34,8 @@ public class Player {
 	private PointF shipDestination;
 
 	private int mLives;
+	public int mBombs;
+
 	private int timeSinceLastBullet;
 	public Bitmap mBitmap;
 
@@ -64,6 +66,7 @@ public class Player {
 		shipDestination = new PointF(-1, -1);
 
 		mLives = Globals.DEFAULT_LIVES;
+		mBombs = Globals.DEFAULT_BOMBS;
 
 		this.timeSinceLastBullet = 0;
 		this.bulletArray = mState.getBullets();
@@ -179,7 +182,7 @@ public class Player {
 		for (int i = 0; i < this.bulletArray.size(); i++) {
 			b = this.bulletArray.getBullet(i);
 
-			if (!b.mBenign && CollisionUtils.playerBulletCollide(this, b)) {
+			if (!b.mBenign && b.mDisplay && CollisionUtils.playerBulletCollide(this, b)) {
 				return true;
 			}
 		}

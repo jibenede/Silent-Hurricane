@@ -37,4 +37,8 @@ public class BulletArray {
 			return upperBound + array.length - lowerBound;
 	}
 
+	public void emptyArray() {
+		lowerBound = upperBound;
+	}
+
 }

@@ -6,26 +6,33 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.view.MotionEvent;
 
 import com.puc.sh.model.Animation;
 import com.puc.sh.model.Audio;
+import com.puc.sh.model.Player.PlayerState;
 import com.puc.sh.model.bullets.Bullet;
 import com.puc.sh.model.foes.Foe;
 import com.puc.sh.model.stages.Stage;
 import com.puc.soa.AssetsHolder;
 import com.puc.soa.GameState;
+import com.puc.soa.Globals;
 import com.puc.soa.RenderView;
 import com.puc.soa.utils.BulletArray;
 import com.puc.soa.utils.CircularArray;
 
-public class GameScreen extends Screen {
+public class GameScreen extends Screen implements SensorEventListener {
 	private Bitmap mBitmap;
 	private Canvas mCanvas;
 	private Paint mPaint;
 	private Matrix mMatrix;
 	private Stage mStage;
 	private PointF mPoint;
+
+	private long mTimeOfLastBomb;
 
 	public GameScreen(Context context, AssetsHolder assets, GameState state, RenderView renderer,
 			Stage stage) {
@@ -35,6 +42,7 @@ public class GameScreen extends Screen {
 		mMatrix = new Matrix();
 		mStage = stage;
 		mPoint = new PointF();
+
 	}
 
 	@Override
@@ -124,6 +132,24 @@ public class GameScreen extends Screen {
 	@Override
 	public Audio getAudio() {
 		return mStage.getStageTheme();
+	}
+
+	public void onAccuracyChanged(Sensor sensor, int accuracy) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void onSensorChanged(SensorEvent event) {
+		if (System.currentTimeMillis() - mTimeOfLastBomb > 3000
+				&& (mState.mShip.mStatus == PlayerState.ALIVE || mState.mShip.mStatus == PlayerState.REVIVING)
+				&& (event.values[0] > Globals.ACCELEROMETER_THRESHOLD || event.values[0] < -Globals.ACCELEROMETER_THRESHOLD)) {
+			if (mState.mShip.mBombs > 0) {
+				mState.mShip.mBombs--;
+				mState.detonateBomb();
+				mTimeOfLastBomb = System.currentTimeMillis();
+			}
+		}
+
 	}
 
 }

@@ -128,7 +128,7 @@ public class StalkerA extends Foe {
 
 			sBullet.initializeLinearBullet(mAssets.laser1, false, (int) vX, (int) vY, mPosition.x
 					+ mBitmap.getWidth() / 2, mPosition.y + mBitmap.getHeight() / 2, 6000, 12, 1);
-			mState.bullets.addBullet(sBullet);
+			mState.mBullets.addBullet(sBullet);
 
 			mTimeUntilNextShot = FIRING_INTERVAL;
 		}

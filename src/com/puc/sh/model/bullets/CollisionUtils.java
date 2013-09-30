@@ -30,4 +30,8 @@ public class CollisionUtils {
 		return !(r2_left > r1_right || r2_right < r1_left || r2_top > r1_bottom || r2_bottom < r1_top);
 	}
 
+	public static float squareDistance(float x1, float y1, float x2, float y2) {
+		return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+	}
+
 }

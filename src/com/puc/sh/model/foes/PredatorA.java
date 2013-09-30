@@ -82,7 +82,7 @@ public class PredatorA extends Foe {
 				// mPosition.x + mBitmap.getWidth() / 2, mPosition.y +
 				// mBitmap.getHeight(), 6000,
 				// BulletType.Laser1, 12, 12);
-				mState.bullets.addBullet(sBullet);
+				mState.mBullets.addBullet(sBullet);
 			}
 			mTimeUntilNextShot = FIRING_INTERVAL;
 		}

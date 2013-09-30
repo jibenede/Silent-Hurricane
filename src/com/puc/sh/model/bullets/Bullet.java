@@ -101,8 +101,8 @@ public class Bullet {
 
 	public void update(long interval) {
 		if (mDisplay) {
-			mLifetime -= interval;
-			if (mLifetime <= 0) {
+			if (mPosition.x < -mSize || mPosition.x > 720 || mPosition.y < -mSize
+					|| mPosition.y > 1280) {
 				mDisplay = false;
 			}
 

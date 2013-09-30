@@ -6,6 +6,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -13,122 +15,142 @@ import android.view.SurfaceView;
 import android.view.WindowManager;
 
 import com.puc.sh.model.Audio;
+import com.puc.sh.screens.GameScreen;
 import com.puc.sh.screens.MainScreen;
 import com.puc.sh.screens.Screen;
 
 public class RenderView extends SurfaceView implements Runnable {
-    private long startTime;
-    private long lastTime;
-    private long currentTime;
+	private long startTime;
+	private long lastTime;
+	private long currentTime;
 
-    private Thread renderThread = null;
-    private SurfaceHolder holder;
-    private Paint paint;
-    private GameState mState;
-    private AssetsHolder mAssets;
+	private Thread renderThread = null;
+	private SurfaceHolder holder;
+	private Paint paint;
+	private GameState mState;
+	private AssetsHolder mAssets;
 
-    private volatile boolean running = false;
-    private Random rand = new Random();
+	private volatile boolean running = false;
+	private Random rand = new Random();
 
-    private int screenWidth;
+	private int screenWidth;
 
-    private Screen mCurrentScreen;
-    private Audio mCurrentAudio;
+	private Screen mCurrentScreen;
+	private Audio mCurrentAudio;
 
-    public RenderView(Context context) {
-        super(context);
-        holder = this.getHolder();
-        paint = new Paint();
+	private SensorManager mSensorManager;
+	private Sensor mAccelerometer;
 
-        WindowManager wm = (WindowManager) context
-                .getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics displaymetrics = new DisplayMetrics();
-        wm.getDefaultDisplay().getMetrics(displaymetrics);
-        screenWidth = displaymetrics.widthPixels;
+	public RenderView(Context context) {
+		super(context);
+		holder = this.getHolder();
+		paint = new Paint();
 
-        mAssets = new AssetsHolder(context);
+		WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+		DisplayMetrics displaymetrics = new DisplayMetrics();
+		wm.getDefaultDisplay().getMetrics(displaymetrics);
+		screenWidth = displaymetrics.widthPixels;
 
-        mState = new GameState(context, mAssets);
+		mAssets = new AssetsHolder(context);
 
-        mCurrentScreen = new MainScreen(context, mAssets, mState, this);
-        mCurrentAudio = mAssets.intro;
-    }
+		mState = new GameState(context, mAssets);
 
-    public void resume() {
-        running = true;
-        renderThread = new Thread(this);
-        renderThread.start();
+		mCurrentScreen = new MainScreen(context, mAssets, mState, this);
+		mCurrentAudio = mAssets.intro;
 
-        mCurrentAudio.play();
-    }
+		mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+	}
 
-    public void pause() {
-        running = false;
-        mCurrentAudio.pause();
-        while (renderThread.isAlive()) {
-            try {
-                renderThread.join();
-            } catch (InterruptedException e) {
-            }
-        }
-    }
+	public void resume() {
+		running = true;
+		renderThread = new Thread(this);
+		renderThread.start();
 
-    public void destroy() {
-        mCurrentAudio.dispose();
-    }
+		mCurrentAudio.play();
 
-    public void run() {
-        startTime = lastTime = System.currentTimeMillis();
-        while (running) {
-            update();
-            if (!holder.getSurface().isValid())
-                continue;
-            draw();
-        }
-    }
+		if (mCurrentScreen instanceof GameScreen) {
+			mSensorManager.registerListener((GameScreen) mCurrentScreen, mAccelerometer,
+					SensorManager.SENSOR_DELAY_GAME);
+		}
+	}
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        return mCurrentScreen.onTouchEvent(event);
+	public void pause() {
+		if (mCurrentScreen instanceof GameScreen) {
+			mSensorManager.unregisterListener((GameScreen) mCurrentScreen);
+		}
 
-    }
+		running = false;
+		mCurrentAudio.pause();
+		while (renderThread.isAlive()) {
+			try {
+				renderThread.join();
+			} catch (InterruptedException e) {
+			}
+		}
+	}
 
-    private void draw() {
-        Canvas canvas = holder.lockCanvas();
+	public void destroy() {
+		mCurrentAudio.dispose();
+	}
 
-        Bitmap screenBmp = mCurrentScreen.getBitmap();
-        canvas.drawBitmap(screenBmp, 0, 0, null);
+	public void run() {
+		startTime = lastTime = System.currentTimeMillis();
+		while (running) {
+			update();
+			if (!holder.getSurface().isValid())
+				continue;
+			draw();
+		}
+	}
 
-        holder.unlockCanvasAndPost(canvas);
-    }
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		return mCurrentScreen.onTouchEvent(event);
 
-    private void update() {
-        currentTime = System.currentTimeMillis();
-        mCurrentScreen.update(currentTime - lastTime);
-        lastTime = currentTime;
-    }
+	}
 
-    public void transitionTo(Screen screen) {
-        mCurrentScreen = screen;
-        Audio audio = screen.getAudio();
-        if (audio != null) {
-            mCurrentAudio.dispose();
-            mCurrentAudio = audio;
-            mCurrentAudio.play();
-        }
-    }
+	private void draw() {
+		Canvas canvas = holder.lockCanvas();
 
-    public void setVolume(float volume) {
-        mCurrentAudio.setVolume(volume);
-    }
+		Bitmap screenBmp = mCurrentScreen.getBitmap();
+		canvas.drawBitmap(screenBmp, 0, 0, null);
 
-    public void stopAudio() {
-        mCurrentAudio.dispose();
-    }
+		holder.unlockCanvasAndPost(canvas);
+	}
 
-    public void startAudio(Audio audio) {
-        mCurrentAudio = audio;
-        mCurrentAudio.play();
-    }
+	private void update() {
+		currentTime = System.currentTimeMillis();
+		mCurrentScreen.update(currentTime - lastTime);
+		lastTime = currentTime;
+	}
+
+	public void transitionTo(Screen screen) {
+		mCurrentScreen = screen;
+		Audio audio = screen.getAudio();
+		if (audio != null) {
+			mCurrentAudio.dispose();
+			mCurrentAudio = audio;
+			mCurrentAudio.play();
+		}
+
+		if (mCurrentScreen instanceof GameScreen) {
+			mSensorManager.registerListener((GameScreen) mCurrentScreen, mAccelerometer,
+					SensorManager.SENSOR_DELAY_GAME);
+		}
+	}
+
+	public void setVolume(float volume) {
+		mCurrentAudio.setVolume(volume);
+	}
+
+	public void stopAudio() {
+		mCurrentAudio.dispose();
+	}
+
+	public void startAudio(Audio audio) {
+		mCurrentAudio = audio;
+		mCurrentAudio.play();
+	}
 
 }
