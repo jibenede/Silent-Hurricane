@@ -39,6 +39,8 @@ public class BossA extends Foe {
 	private final int BULLET_SPEED = 500;
 	private long mTimeUntilNextShot;
 
+	private long mTimeOfLastPatternChange;
+
 	private float resetX;
 	private float resetY;
 
@@ -51,7 +53,7 @@ public class BossA extends Foe {
 
 		mPosition = new PointF(mSize.x / 2 - mShipRadius, -mBitmap.getHeight());
 		mMovementPhase = MovementPattern.ARRIVING;
-		mBulletPhase = BulletPattern.Pattern2;
+		mBulletPhase = BulletPattern.Pattern1;
 
 		mTimeUntilNextShot = 500;
 
@@ -85,7 +87,7 @@ public class BossA extends Foe {
 			mPosition.y += (interval / 1000.0) * SPEED;
 			if (mPosition.y > 50) {
 				mPosition.y = 50;
-				mMovementPhase = MovementPattern.STILL;
+				mMovementPhase = MovementPattern.GOING_LEFT;
 			}
 		} else if (mMovementPhase == MovementPattern.GOING_LEFT) {
 			mPosition.x -= (interval / 1000.0) * (SPEED / 2);
@@ -136,55 +138,61 @@ public class BossA extends Foe {
 
 	@Override
 	public void fireBullets(long interval) {
-		if (mMovementPhase != MovementPattern.ARRIVING && mMovementPhase != MovementPattern.RESET) {
-			if (mBulletPhase == BulletPattern.Pattern1) {
-				mTimeUntilNextShot -= interval;
-				if (mTimeUntilNextShot < 0) {
-					for (int i = 0; i < 40; i++) {
-						double angle = 2 * Math.PI * (i / 40f);
+		if (System.currentTimeMillis() - mTimeOfLastPatternChange > 3000) {
 
-						sBullet.initializeLinearBullet(mAssets.laser1, false,
-								(int) (Math.cos(angle) * 200), (int) (Math.sin(angle) * 200),
-								mPosition.x + mShipRadius, mPosition.y + mBitmap.getHeight(), 6000,
-								12, 1);
-						mState.mBullets.addBullet(sBullet);
-					}
-					mTimeUntilNextShot = FIRING_INTERVAL;
-				}
-			} else if (mBulletPhase == BulletPattern.Pattern2) {
-				mTimeUntilNextShot -= interval;
-				if (mTimeUntilNextShot < 0) {
-					for (int i = 0; i < 8; i++) {
-						for (int j = 0; j < 16; j++) {
-							float angle = (float) (2 * Math.PI * (i / 8f) + (Math.PI / 8)
-									* (j / 16f) + delta);
+			if (mMovementPhase != MovementPattern.ARRIVING
+					&& mMovementPhase != MovementPattern.RESET) {
+				if (mBulletPhase == BulletPattern.Pattern1) {
+					mTimeUntilNextShot -= interval;
+					if (mTimeUntilNextShot < 0) {
+						for (int i = 0; i < 40; i++) {
+							double angle = 2 * Math.PI * (i / 40f);
 
-							float vX = FloatMath.cos(angle) * (350 + 4 * j);
-							float vY = FloatMath.sin(angle) * (350 + 4 * j);
-
-							sBullet.initializeLinearBullet(mAssets.fireball, false, vX, vY,
-									mPosition.x + mBitmap.getWidth() / 2,
-									mPosition.y + mBitmap.getHeight() / 2 + (j * 3), 3000, 24, 1);
+							sBullet.initializeLinearBullet(mAssets.laser1, false,
+									(int) (Math.cos(angle) * 200), (int) (Math.sin(angle) * 200),
+									mPosition.x + mShipRadius, mPosition.y + mBitmap.getHeight(),
+									6000, 12, 1);
 							mState.mBullets.addBullet(sBullet);
 						}
+						mTimeUntilNextShot = FIRING_INTERVAL;
 					}
-					for (int i = 0; i < 8; i++) {
-						for (int j = 0; j < 16; j++) {
-							float angle = (float) (2 * Math.PI * ((7 - i) / 8f) - (Math.PI / 8)
-									* (j / 16f) + Math.PI / 8);
+				} else if (mBulletPhase == BulletPattern.Pattern2) {
+					mTimeUntilNextShot -= interval;
+					if (mTimeUntilNextShot < 0) {
+						for (int i = 0; i < 8; i++) {
+							for (int j = 0; j < 16; j++) {
+								float angle = (float) (2 * Math.PI * (i / 8f) + (Math.PI / 8)
+										* (j / 16f) + delta);
 
-							float vX = FloatMath.cos(angle) * (350 + 4 * j);
-							float vY = FloatMath.sin(angle) * (350 + 4 * j);
+								float vX = FloatMath.cos(angle) * (350 + 4 * j);
+								float vY = FloatMath.sin(angle) * (350 + 4 * j);
 
-							sBullet.initializeLinearBullet(mAssets.fireball, false, vX, vY,
-									mPosition.x + mBitmap.getWidth() / 2,
-									mPosition.y + mBitmap.getHeight() / 2 + (j * 6), 3000, 24, 1);
-							mState.mBullets.addBullet(sBullet);
+								sBullet.initializeLinearBullet(mAssets.fireball, false, vX, vY,
+										mPosition.x + mBitmap.getWidth() / 2,
+										mPosition.y + mBitmap.getHeight() / 2 + (j * 3), 3000, 24,
+										1);
+								mState.mBullets.addBullet(sBullet);
+							}
 						}
-					}
-					mTimeUntilNextShot = 400;
-					delta += (float) (Math.PI / 32);
+						for (int i = 0; i < 8; i++) {
+							for (int j = 0; j < 16; j++) {
+								float angle = (float) (2 * Math.PI * ((7 - i) / 8f) - (Math.PI / 8)
+										* (j / 16f) + Math.PI / 8);
 
+								float vX = FloatMath.cos(angle) * (350 + 4 * j);
+								float vY = FloatMath.sin(angle) * (350 + 4 * j);
+
+								sBullet.initializeLinearBullet(mAssets.fireball, false, vX, vY,
+										mPosition.x + mBitmap.getWidth() / 2,
+										mPosition.y + mBitmap.getHeight() / 2 + (j * 6), 3000, 24,
+										1);
+								mState.mBullets.addBullet(sBullet);
+							}
+						}
+						mTimeUntilNextShot = 400;
+						delta += (float) (Math.PI / 32);
+
+					}
 				}
 			}
 
@@ -204,6 +212,8 @@ public class BossA extends Foe {
 			mMovementPhase = MovementPattern.RESET;
 			mSpeedCalculated = false;
 			mTimeUntilNextShot = 0;
+
+			mTimeOfLastPatternChange = System.currentTimeMillis();
 		}
 	}
 
