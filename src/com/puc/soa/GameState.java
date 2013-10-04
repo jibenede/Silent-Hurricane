@@ -2,83 +2,131 @@ package com.puc.soa;
 
 import android.content.Context;
 
+import com.puc.sh.model.Animation;
 import com.puc.sh.model.Player;
 import com.puc.sh.model.Player.PlayerState;
+import com.puc.sh.model.bullets.Bullet;
 import com.puc.sh.model.foes.Foe;
+import com.puc.sh.model.stages.Stage;
 import com.puc.soa.utils.BulletArray;
 import com.puc.soa.utils.CircularArray;
+import com.puc.soa.utils.Utils;
 
 public class GameState {
-	private Context context;
-	private AssetsHolder mAssets;
+    private AuroraContext mContext;
+    private AssetsHolder mAssets;
 
-	public Player mShip;
+    public Player mShip;
 
-	private int mPlayerBombs;
+    private int mPlayerBombs;
 
-	public BulletArray mBullets;
-	public CircularArray mEnemies;
-	public CircularArray mAnimations;
+    public BulletArray mEnemyBullets;
+    public BulletArray mPlayerBullets;
 
-	public GameState(Context context, AssetsHolder assets) {
-		this.context = context;
-		mAssets = assets;
+    public long mScore;
 
-		mPlayerBombs = Globals.DEFAULT_BOMBS;
+    public CircularArray mEnemies;
+    public CircularArray mAnimations;
 
-		mBullets = new BulletArray(Globals.BULLET_LIMIT);
-		mShip = new Player(context, this, assets);
+    public Bullet mBullet;
 
-		mEnemies = new CircularArray(Globals.ENEMY_LIMIT);
-		mAnimations = new CircularArray(Globals.ANIMATIONS_LIMIT);
+    private Stage mCurrentStage;
 
-	}
+    public boolean mBombActivated;
 
-	public void setDestination(int x, int y) {
-		mShip.setDestination(x, y);
-	}
+    private long mTimeOfLastBomb;
 
-	public void update(long interval) {
-		mShip.update(interval);
+    public GameState(Context context, AssetsHolder assets) {
+        mAssets = assets;
 
-		for (int i = 0; i < mEnemies.size(); i++) {
-			mEnemies.get(i).update(interval);
-		}
+        mPlayerBombs = Globals.DEFAULT_BOMBS;
 
-		for (int i = 0; i < mBullets.size(); i++) {
-			mBullets.getBullet(i).update(interval);
-		}
+        mContext = new AuroraContext(context, this, assets);
 
-		for (int i = 0; i < mAnimations.size(); i++) {
-			mAnimations.get(i).update(interval);
-		}
+        mEnemyBullets = new BulletArray(mContext, Globals.BULLET_LIMIT);
+        mPlayerBullets = new BulletArray(mContext, 200);
 
-		mEnemies.clean();
-		mBullets.clean();
-		mAnimations.clean();
-	}
+        mShip = new Player(mContext);
 
-	public void detonateBomb() {
-		mBullets.emptyArray();
-		for (int i = 0; i < mEnemies.size(); i++) {
-			((Foe) mEnemies.get(i)).bomb();
-		}
-	}
+        mEnemies = new CircularArray(Globals.ENEMY_LIMIT);
+        mAnimations = new CircularArray(Globals.ANIMATIONS_LIMIT);
 
-	public BulletArray getBullets() {
-		return mBullets;
-	}
+        mBullet = new Bullet(mContext);
+    }
 
-	public CircularArray getEnemies() {
-		return mEnemies;
-	}
+    public Stage getCurrentStage() {
+        return mCurrentStage;
+    }
 
-	public boolean isPlayerContinuing() {
-		return mShip.mStatus != PlayerState.DEFEATED;
-	}
+    public void setCurrentStage(Stage stage) {
+        mCurrentStage = stage;
+    }
 
-	public float getBossHpRatio() {
-		return 0; // this.enemies.getEnemy(0).getHp() / 1000f;
-	}
+    public void setDestination(int x, int y) {
+        mShip.setDestination(x, y);
+    }
+
+    public void update(long interval) {
+        if (mBombActivated) {
+            animateBomb();
+            animateBomb();
+            if (System.currentTimeMillis() - mTimeOfLastBomb > 1000) {
+                mBombActivated = false;
+            }
+        }
+
+        mShip.update(interval);
+
+        for (int i = 0; i < mEnemies.size(); i++) {
+            mEnemies.get(i).update(interval);
+        }
+
+        for (int i = 0; i < mEnemyBullets.size(); i++) {
+            mEnemyBullets.getBullet(i).update(interval);
+        }
+
+        for (int i = 0; i < mPlayerBullets.size(); i++) {
+            mPlayerBullets.getBullet(i).update(interval);
+        }
+
+        for (int i = 0; i < mAnimations.size(); i++) {
+            mAnimations.get(i).update(interval);
+        }
+
+        mEnemies.clean();
+        mEnemyBullets.clean();
+        mPlayerBullets.clean();
+        mAnimations.clean();
+    }
+
+    private void animateBomb() {
+        int x = -150 + Utils.sRandom.nextInt(Globals.CANVAS_WIDTH);
+        int y = -150 + Utils.sRandom.nextInt(Globals.CANVAS_HEIGHT);
+        Animation a = new Animation(mContext, mAssets.bomb, 50, x, y);
+        a.prepare();
+        mAnimations.add(a);
+    }
+
+    public void detonateBomb() {
+        mEnemyBullets.emptyArray();
+        for (int i = 0; i < mEnemies.size(); i++) {
+            ((Foe) mEnemies.get(i)).bomb();
+        }
+
+        mBombActivated = true;
+        mTimeOfLastBomb = System.currentTimeMillis();
+    }
+
+    public CircularArray getEnemies() {
+        return mEnemies;
+    }
+
+    public boolean isPlayerContinuing() {
+        return mShip.mStatus != PlayerState.DEFEATED;
+    }
+
+    public float getBossHpRatio() {
+        return 0; // this.enemies.getEnemy(0).getHp() / 1000f;
+    }
 
 }

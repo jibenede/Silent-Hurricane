@@ -1,99 +1,93 @@
 package com.puc.sh.model.foes;
 
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Point;
 import android.graphics.PointF;
-import android.graphics.Rect;
-import android.view.Display;
-import android.view.WindowManager;
 
 import com.puc.sh.model.Renderable;
 import com.puc.sh.model.bullets.Bullet;
-import com.puc.soa.AssetsHolder;
-import com.puc.soa.GameState;
+import com.puc.soa.AuroraContext;
 import com.puc.soa.utils.BulletArray;
 
 public abstract class Foe implements Renderable {
-	protected Context mContext;
-	protected GameState mState;
-	protected AssetsHolder mAssets;
-	protected int mHp;
-	protected Point mSize;
+    public static final int HORIZONTAL_CENTER = -1000;
+    public static final int VERTICAL_TOP = -1001;
 
-	private float X = Float.MIN_VALUE;
-	private float Y = Float.MIN_VALUE;
+    protected AuroraContext mContext;
+    public int mHp;
+    public int mOriginalHp;
 
-	protected static Rect sFoeRect;
-	protected static Rect sBulletRect;
-	protected static Bullet sBullet;
+    public PointF mPosition;
+    public Bitmap mBitmap;
 
-	static {
-		sFoeRect = new Rect();
-		sBulletRect = new Rect();
-		sBullet = new Bullet();
-	}
+    protected Bullet mBullet;
+    protected boolean mInvulnerable;
 
-	public Foe(Context context, GameState state, AssetsHolder assets, int hp) {
-		mContext = context;
-		mState = state;
-		mAssets = assets;
-		mHp = hp;
+    public Foe(AuroraContext context, int hp) {
+        mContext = context;
+        mHp = mOriginalHp = hp;
+        mBullet = new Bullet(context);
+    }
 
-		WindowManager wManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
-		Display display = wManager.getDefaultDisplay();
-		mSize = new Point();
-		display.getSize(mSize);
-	}
+    public void update(long interval) {
+        if (isOnScreen()) {
+            updatePattern();
+            updatePosition(interval);
+            fireBullets(interval);
+            hitTest();
 
-	public abstract PointF getPosition();
+        }
+    }
 
-	public void update(long interval) {
-		if (isOnScreen()) {
-			updatePattern();
-			updatePosition(interval);
-			fireBullets(interval);
-			hitTest();
-		}
-	}
+    public abstract float getAngle();
 
-	public abstract Bitmap getBitmap();
+    public abstract boolean isOnScreen();
 
-	public abstract float getAngle();
+    protected abstract void updatePosition(long interval);
 
-	public abstract boolean isOnScreen();
+    protected void hitTest() {
+        BulletArray bullets = mContext.getState().mPlayerBullets;
+        Bullet b;
+        for (int i = 0; i < bullets.size(); i++) {
+            b = bullets.getBullet(i);
 
-	protected abstract void updatePosition(long interval);
+            if (b.mDisplay && collidesWith(b)) {
+                if (!mInvulnerable) {
+                    mHp -= b.mFirepower;
+                    mContext.getState().mScore += b.mFirepower
+                            * mContext.getState().mShip.mLives * 100;
+                }
+                b.mDisplay = false;
+                if (mHp <= 0 && holdsStage()) {
+                    mContext.getState().getCurrentStage().unholdTimer();
+                }
+            }
+        }
+    }
 
-	protected void hitTest() {
-		BulletArray bullets = mState.getBullets();
-		Bullet b;
-		for (int i = 0; i < bullets.size(); i++) {
-			b = bullets.getBullet(i);
+    public abstract boolean collidesWith(Bullet b);
 
-			if (b.mBenign && b.mDisplay && collidesWith(b)) {
-				mHp -= b.getFirepower();
-				b.mDisplay = false;
-			}
-		}
-	}
+    public abstract void fireBullets(long interval);
 
-	public abstract boolean collidesWith(Bullet b);
+    public boolean isBoss() {
+        return false;
+    }
 
-	public abstract void fireBullets(long interval);
+    public boolean holdsStage() {
+        return false;
+    }
 
-	public boolean isBoss() {
-		return false;
-	}
+    public void bomb() {
+        if (isBoss()) {
+            mHp -= 50;
+        } else {
+            mHp = 0;
+        }
 
-	public void bomb() {
-		if (isBoss()) {
-			mHp -= 50;
-		} else {
-			mHp = 0;
-		}
-	}
+        if (holdsStage()) {
+            mContext.getState().getCurrentStage().unholdTimer();
+        }
+    }
 
-	protected void updatePattern() {
-	}
+    protected void updatePattern() {
+    }
 }

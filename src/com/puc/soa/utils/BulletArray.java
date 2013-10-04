@@ -1,44 +1,51 @@
 package com.puc.soa.utils;
 
 import com.puc.sh.model.bullets.Bullet;
+import com.puc.soa.AuroraContext;
 
 public class BulletArray {
-	private int lowerBound;
-	private int upperBound;
-	private Bullet[] array;
+    private AuroraContext mContext;
+    private int lowerBound;
+    private int upperBound;
+    private Bullet[] array;
 
-	public BulletArray(int capacity) {
-		array = new Bullet[capacity];
+    public BulletArray(AuroraContext context, int capacity) {
+        mContext = context;
+        array = new Bullet[capacity];
 
-		lowerBound = upperBound = 0;
-	}
+        lowerBound = upperBound = 0;
+    }
 
-	public void addBullet(Bullet b) {
-		if (array[upperBound] == null)
-			array[upperBound] = new Bullet();
-		array[upperBound].initializeBullet(b);
+    public void addBullet(Bullet b) {
+        if (mContext.getState().mBombActivated) {
+            return;
+        }
 
-		upperBound = (upperBound + 1) % array.length;
-	}
+        if (array[upperBound] == null)
+            array[upperBound] = new Bullet(mContext);
+        array[upperBound].initializeBullet(b);
 
-	public Bullet getBullet(int index) {
-		return array[(lowerBound + index) % array.length];
-	}
+        upperBound = (upperBound + 1) % array.length;
+    }
 
-	public void clean() {
-		while (lowerBound != upperBound && !array[lowerBound].mDisplay)
-			lowerBound = (lowerBound + 1) % array.length;
-	}
+    public Bullet getBullet(int index) {
+        return array[(lowerBound + index) % array.length];
+    }
 
-	public int size() {
-		if (upperBound >= lowerBound)
-			return upperBound - lowerBound;
-		else
-			return upperBound + array.length - lowerBound;
-	}
+    public void clean() {
+        while (lowerBound != upperBound && !array[lowerBound].mDisplay)
+            lowerBound = (lowerBound + 1) % array.length;
+    }
 
-	public void emptyArray() {
-		lowerBound = upperBound;
-	}
+    public int size() {
+        if (upperBound >= lowerBound)
+            return upperBound - lowerBound;
+        else
+            return upperBound + array.length - lowerBound;
+    }
+
+    public void emptyArray() {
+        lowerBound = upperBound;
+    }
 
 }

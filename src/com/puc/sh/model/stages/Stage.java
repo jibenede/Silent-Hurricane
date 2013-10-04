@@ -3,104 +3,128 @@ package com.puc.sh.model.stages;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
-import android.content.Context;
+import android.graphics.Bitmap;
 
 import com.puc.sh.model.Audio;
 import com.puc.sh.model.foes.Foe;
-import com.puc.soa.AssetsHolder;
-import com.puc.soa.GameState;
+import com.puc.soa.AuroraContext;
 import com.puc.soa.RenderView;
 import com.puc.soa.utils.Utils;
 
 public abstract class Stage {
-	protected Context mContext;
-	protected GameState mState;
-	protected AssetsHolder mAssets;
-	protected RenderView mRenderer;
+    protected AuroraContext mContext;
+    protected RenderView mRenderer;
 
-	protected Queue<FoeAppearance> mFoes;
-	protected List<FoeAppearance> mTemp;
+    protected List<FoeAppearance> mFoes;
+    private int mCurrentFoe;
 
-	private long mTimer;
-	private boolean mHold;
-	private boolean mBossAppeared;
+    protected List<FoeAppearance> mTemp;
 
-	protected long mTimeUntilBossAudio;
-	protected boolean mStageAudioStopped;
+    private long mTimer;
+    private int mHold;
+    private boolean mBossAppeared;
 
-	public Stage(Context context, GameState state, AssetsHolder assets, RenderView renderer) {
-		mContext = context;
-		mState = state;
-		mAssets = assets;
-		mRenderer = renderer;
+    protected long mTimeUntilBossAudio;
+    protected boolean mStageAudioStopped;
 
-		mFoes = new LinkedList<Stage.FoeAppearance>();
-		mTemp = new ArrayList<Stage.FoeAppearance>();
-		mTimeUntilBossAudio = 3000;
-	}
+    public Foe mBoss;
 
-	public void update(long interval) {
-		if (!mHold) {
-			mTimer += interval;
-		}
+    public Stage(AuroraContext context, RenderView renderer) {
+        mContext = context;
+        mRenderer = renderer;
 
-		while (!mFoes.isEmpty() && mFoes.peek().mTime < mTimer) {
-			Foe foe = mFoes.poll().mFoe;
-			mState.getEnemies().add(foe);
+        mFoes = new LinkedList<Stage.FoeAppearance>();
+        mTemp = new ArrayList<Stage.FoeAppearance>();
+        mTimeUntilBossAudio = 3000;
+        mCurrentFoe = 0;
+    }
 
-			if (foe.isBoss() && !mBossAppeared) {
-				mBossAppeared = true;
-			}
-		}
+    public void reset() {
+        // TODO: implement
+    }
 
-		if (mTimeUntilBossAudio >= 0 && mBossAppeared) {
-			mTimeUntilBossAudio -= interval;
+    public void update(long interval) {
+        if (mHold <= 0) {
+            mTimer += interval;
+        }
 
-			if (!mStageAudioStopped) {
-				mRenderer.setVolume((mTimeUntilBossAudio - 1000) / 2000.0f);
+        while (mCurrentFoe < mFoes.size()
+                && mFoes.get(mCurrentFoe).mTime < mTimer) {
+            Foe foe = mFoes.get(mCurrentFoe).mFoe;
+            mCurrentFoe++;
 
-				if (mTimeUntilBossAudio < 1000) {
-					mRenderer.stopAudio();
-					mStageAudioStopped = true;
-				}
-			}
+            mContext.getState().getEnemies().add(foe);
 
-			if (mTimeUntilBossAudio < 0) {
-				mRenderer.startAudio(getBossTheme());
-			}
-		}
+            if (foe.isBoss() && !mBossAppeared) {
+                mBossAppeared = true;
+                mBoss = foe;
+            }
 
-	}
+            if (foe.holdsStage()) {
+                mHold++;
+            }
+        }
 
-	protected void addFoeAtTime(Foe foe, long time) {
-		mTemp.add(new FoeAppearance(time, foe));
-	}
+        if (mTimeUntilBossAudio >= 0 && mBossAppeared) {
+            mTimeUntilBossAudio -= interval;
 
-	protected void prepare() {
-		FoeAppearance[] temp = mTemp.toArray(new FoeAppearance[mTemp.size()]);
-		Utils.quicksort(temp);
-		for (FoeAppearance f : temp) {
-			mFoes.offer(f);
-		}
-	}
+            if (!mStageAudioStopped) {
+                mRenderer.setVolume((mTimeUntilBossAudio - 1000) / 2000.0f);
 
-	private class FoeAppearance implements Comparable<FoeAppearance> {
-		private long mTime;
-		private Foe mFoe;
+                if (mTimeUntilBossAudio < 1000) {
+                    mRenderer.stopAudio();
+                    mStageAudioStopped = true;
+                }
+            }
 
-		public FoeAppearance(long time, Foe foe) {
-			mTime = time;
-			mFoe = foe;
-		}
+            if (mTimeUntilBossAudio < 0) {
+                mRenderer.startAudio(getBossTheme());
+            }
+        }
 
-		public int compareTo(FoeAppearance another) {
-			return (int) (mTime - another.mTime);
-		}
-	}
+    }
 
-	public abstract Audio getStageTheme();
+    public boolean hasBossAppeared() {
+        return mBossAppeared;
+    }
 
-	public abstract Audio getBossTheme();
+    public void unholdTimer() {
+        mHold--;
+        if (mHold < 0) {
+            mHold = 0;
+        }
+    }
+
+    protected void addFoeAtTime(Foe foe, long time) {
+        mTemp.add(new FoeAppearance(time, foe));
+    }
+
+    protected void prepare() {
+        FoeAppearance[] temp = mTemp.toArray(new FoeAppearance[mTemp.size()]);
+        Utils.quicksort(temp);
+        for (FoeAppearance f : temp) {
+            mFoes.add(f);
+        }
+    }
+
+    private class FoeAppearance implements Comparable<FoeAppearance> {
+        private long mTime;
+        private Foe mFoe;
+
+        public FoeAppearance(long time, Foe foe) {
+            mTime = time;
+            mFoe = foe;
+        }
+
+        public int compareTo(FoeAppearance another) {
+            return (int) (mTime - another.mTime);
+        }
+    }
+
+    public abstract Audio getStageTheme();
+
+    public abstract Audio getBossTheme();
+
+    public abstract Bitmap getBackground();
 }
