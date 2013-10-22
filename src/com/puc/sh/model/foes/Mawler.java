@@ -5,20 +5,22 @@ import android.graphics.PointF;
 import com.puc.sh.model.bullets.CollisionUtils;
 import com.puc.soa.AuroraContext;
 
-public class Dart extends Foe {
+public class Mawler extends Foe {
+    private final int SPEED = 300;
+    private final long FIRING_INTERVAL = 2000;
+    private final int BULLET_SPEED = 400;
+
     private PointF mDestination;
     private float mSpeedX;
     private float mSpeedY;
     private boolean mInPosition;
 
     private long mTimeUntilNextShot;
-    private long mFiringInterval;
-    private int fireCycle;
+    private long mWait;
 
-    private static final int SPEED = 500;
-
-    public Dart(AuroraContext context, int hp) {
+    public Mawler(AuroraContext context, int hp, long wait) {
         super(context, hp, context.getAssets().dart);
+        mWait = wait;
     }
 
     public void setPositions(float startX, float startY, float dstX, float dstY) {
@@ -32,11 +34,11 @@ public class Dart extends Foe {
         mSpeedY = vY / factor;
 
         mTimeUntilNextShot = 0;
-        mFiringInterval = 2000;
     }
 
     @Override
     public float getAngle() {
+        // TODO Auto-generated method stub
         return 0;
     }
 
@@ -47,7 +49,9 @@ public class Dart extends Foe {
 
     @Override
     protected void updatePosition(long interval) {
-        if (!mInPosition) {
+        mWait -= interval;
+
+        if (!mInPosition && mWait < 0) {
             mPosition.x += mSpeedX * (interval / 1000f);
             mPosition.y += mSpeedY * (interval / 1000f);
 
@@ -63,34 +67,34 @@ public class Dart extends Foe {
 
     @Override
     public void fireBullets(long interval) {
-        if (mInPosition) {
-            mTimeUntilNextShot -= interval;
-            if (mTimeUntilNextShot < 0) {
-                for (int i = 0; i < 100; i++) {
-                    float angle = (float) (2 * Math.PI * (i / 100f));
-                    if (fireCycle % 2 == 0) {
-                        angle += (float) (Math.PI / 100);
-                    }
+        mTimeUntilNextShot -= interval;
+        if (mTimeUntilNextShot < 0) {
+            double deltaX = mContext.getState().mShip.mShipPosition.x
+                    - mPosition.x;
+            double deltaY = mContext.getState().mShip.mShipPosition.y
+                    - mPosition.y;
 
-                    float vX = (float) (Math.cos(angle) * 150);
-                    float vY = (float) (Math.sin(angle) * 150);
+            double angle = Math.atan2(deltaY, deltaX);
+
+            for (int i = -3; i <= 3; i++) {
+                for (int j = 0; j < 4; j++) {
+                    double a = angle + Math.PI / 20 * i;
+
+                    double vX = (1 + j * 0.2) * BULLET_SPEED * Math.cos(a);
+                    double vY = (1 + j * 0.2) * BULLET_SPEED * Math.sin(a);
 
                     mBullet.initializeLinearBullet(
                             mContext.getAssets().fireball, false, (int) vX,
-                            (int) vY,
-                            mPosition.x + mBitmap.getWidth() / 2 - 12,
-                            mPosition.y + mBitmap.getHeight(), 6000, 24, 1);
-
+                            (int) vY, mPosition.x + mBitmap.getWidth() / 2,
+                            mPosition.y + mBitmap.getHeight() / 2, 6000, 24, 1);
                     mContext.getState().mEnemyBullets.addBullet(mBullet);
                 }
-                mTimeUntilNextShot = mFiringInterval;
-                if (mFiringInterval > 1000) {
-                    mFiringInterval -= 100;
-                }
-                fireCycle++;
 
             }
+
+            mTimeUntilNextShot = FIRING_INTERVAL;
         }
+
     }
 
     @Override

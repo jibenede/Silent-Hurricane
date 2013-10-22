@@ -8,7 +8,8 @@ import android.view.MotionEvent;
 import com.puc.sh.model.Audio;
 import com.puc.sh.model.Widget;
 import com.puc.sh.model.Widget.OnTouchListener;
-import com.puc.sh.model.stages.Stage1;
+import com.puc.sh.model.stages.Stage;
+import com.puc.sh.model.stages.Stage2;
 import com.puc.soa.AuroraContext;
 import com.puc.soa.Globals;
 import com.puc.soa.RenderView;
@@ -109,7 +110,7 @@ public class StageSelectionScreen extends Screen {
     }
 
     private void onFadeFinished() {
-        Stage1 stage = new Stage1(mContext, mRenderer);
+        Stage stage = new Stage2(mContext, mRenderer);
         GameScreen screen = new GameScreen(mContext, mRenderer, stage);
         mContext.getState().setCurrentStage(stage);
         mRenderer.transitionTo(screen);

@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import com.puc.sh.model.Audio;
 import com.puc.sh.model.foes.BossA;
 import com.puc.sh.model.foes.Dart;
-import com.puc.sh.model.foes.Foe;
 import com.puc.sh.model.foes.PredatorA;
 import com.puc.sh.model.foes.StalkerA;
 import com.puc.sh.model.foes.Stingray;
@@ -41,8 +40,10 @@ public class Stage1 extends Stage {
             addFoeAtTime(foe, 35000 + 500 * i);
         }
 
-        Dart dart = new Dart(context, 150, Foe.HORIZONTAL_CENTER,
-                Foe.VERTICAL_TOP, Foe.HORIZONTAL_CENTER, 250);
+        Dart dart = new Dart(context, 150);
+        dart.setPositions(Globals.CANVAS_WIDTH / 2 - dart.mBitmap.getWidth()
+                / 2, -dart.mBitmap.getHeight(), Globals.CANVAS_WIDTH / 2
+                - dart.mBitmap.getWidth() / 2, 250);
         addFoeAtTime(dart, 46000);
 
         dart = new Dart(context, 150);

@@ -2,7 +2,6 @@ package com.puc.sh.model;
 
 import android.graphics.Bitmap;
 import android.graphics.PointF;
-import android.util.FloatMath;
 import android.util.TypedValue;
 
 import com.puc.sh.model.bullets.Bullet;
@@ -40,6 +39,7 @@ public class Player {
 
     private long mTimeOfLastRebirth;
     private long mTimeOfLastDeath;
+    private long mTicks;
 
     private AssetsHolder mAssets;
     private GameState mState;
@@ -71,7 +71,7 @@ public class Player {
             return true;
         } else if (mStatus == PlayerState.REVIVING) {
             // Flicker effect every 250 ms when reviving.
-            if (((System.currentTimeMillis() - mTimeOfLastRebirth) / 100) % 2 == 0) {
+            if (((mTicks - mTimeOfLastRebirth) / 100) % 2 == 0) {
                 return true;
             }
         }
@@ -79,6 +79,8 @@ public class Player {
     }
 
     public void update(long interval) {
+        mTicks += interval;
+
         if (mStatus == PlayerState.ALIVE || mStatus == PlayerState.REVIVING) {
             this.updateShipPosition(interval);
 
@@ -93,17 +95,17 @@ public class Player {
             }
 
             if (mStatus == PlayerState.REVIVING
-                    && System.currentTimeMillis() - mTimeOfLastRebirth > TIME_OF_INVULNERABILITY) {
+                    && mTicks - mTimeOfLastRebirth > TIME_OF_INVULNERABILITY) {
                 mStatus = PlayerState.ALIVE;
             }
 
         } else if (mStatus == PlayerState.DEAD) {
-            if (System.currentTimeMillis() - mTimeOfLastDeath > TIME_FOR_REVIVAL) {
+            if (mTicks - mTimeOfLastDeath > TIME_FOR_REVIVAL) {
                 mShipPosition.x = mStartX;
                 mShipPosition.y = mStartY;
 
                 mStatus = PlayerState.REVIVING;
-                mTimeOfLastRebirth = System.currentTimeMillis();
+                mTimeOfLastRebirth = mTicks;
             }
         }
     }
@@ -123,7 +125,7 @@ public class Player {
         a.prepare();
         mState.mAnimations.add(a);
 
-        mTimeOfLastDeath = System.currentTimeMillis();
+        mTimeOfLastDeath = mTicks;
     }
 
     private void fireBullets() {
@@ -157,7 +159,7 @@ public class Player {
             float xDelta = shipDestination.x - mShipPosition.x;
             float yDelta = shipDestination.y - mShipPosition.y;
 
-            float delta = FloatMath.sqrt(xDelta * xDelta + yDelta * yDelta);
+            float delta = (float) (Math.sqrt(xDelta * xDelta + yDelta * yDelta));
 
             float xSpeed = delta < 1 ? 0 : xDelta / delta * Globals.MAX_SPEED
                     * interval / 1000;
@@ -173,6 +175,10 @@ public class Player {
                 mShipPosition.y += Math.min(ySpeed, yDelta);
             else
                 mShipPosition.y += Math.max(ySpeed, yDelta);
+
+            if (mShipPosition.y < 0) {
+                mShipPosition.y = 0;
+            }
         }
     }
 

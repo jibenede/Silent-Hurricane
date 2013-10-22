@@ -199,11 +199,6 @@ public class Bullet {
             b.initializeLinearBullet(mContext.getAssets().greenBullet, false,
                     (int) vX, (int) vY, mPosition.x + mBitmap.getWidth() / 2,
                     mPosition.y + mBitmap.getHeight(), 6000, 12, 1);
-
-            // sBullet.initializeBullet(false, (int) vX, (int) vY,
-            // mPosition.x + mBitmap.getWidth() / 2, mPosition.y +
-            // mBitmap.getHeight(), 6000,
-            // BulletType.Laser1, 12, 12);
             mContext.getState().mEnemyBullets.addBullet(b);
         }
     }

@@ -35,6 +35,7 @@ public class GameState {
     public boolean mBombActivated;
 
     private long mTimeOfLastBomb;
+    private long mTicks;
 
     public GameState(Context context, AssetsHolder assets) {
         mAssets = assets;
@@ -67,10 +68,11 @@ public class GameState {
     }
 
     public void update(long interval) {
+        mTicks += interval;
         if (mBombActivated) {
             animateBomb();
             animateBomb();
-            if (System.currentTimeMillis() - mTimeOfLastBomb > 1000) {
+            if (mTicks - mTimeOfLastBomb > 1000) {
                 mBombActivated = false;
             }
         }
@@ -114,7 +116,7 @@ public class GameState {
         }
 
         mBombActivated = true;
-        mTimeOfLastBomb = System.currentTimeMillis();
+        mTimeOfLastBomb = mTicks;
     }
 
     public CircularArray getEnemies() {
@@ -124,9 +126,4 @@ public class GameState {
     public boolean isPlayerContinuing() {
         return mShip.mStatus != PlayerState.DEFEATED;
     }
-
-    public float getBossHpRatio() {
-        return 0; // this.enemies.getEnemy(0).getHp() / 1000f;
-    }
-
 }

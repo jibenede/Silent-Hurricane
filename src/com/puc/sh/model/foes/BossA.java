@@ -39,10 +39,9 @@ public class BossA extends Foe {
     private float resetY;
 
     public BossA(AuroraContext context, int hp) {
-        super(context, hp);
+        super(context, hp, context.getAssets().boss);
         mStartingHp = hp;
 
-        mBitmap = context.getAssets().boss;
         mShipRadius = mBitmap.getWidth() / 2;
 
         mPosition = new PointF(Globals.CANVAS_WIDTH / 2 - mShipRadius,
@@ -142,7 +141,7 @@ public class BossA extends Foe {
 
     @Override
     public void fireBullets(long interval) {
-        if (System.currentTimeMillis() - mTimeOfLastPatternChange > 3000) {
+        if (mTicks - mTimeOfLastPatternChange > 3000) {
 
             if (mMovementPhase != MovementPattern.ARRIVING
                     && mMovementPhase != MovementPattern.RESET) {
@@ -165,19 +164,19 @@ public class BossA extends Foe {
             mMovementPhase = MovementPattern.RESET;
             mSpeedCalculated = false;
 
-            mTimeOfLastPatternChange = System.currentTimeMillis();
+            mTimeOfLastPatternChange = mTicks;
         } else if (mCurrentPattern == 1 && mHp < 0.5 * mStartingHp) {
             mCurrentPattern++;
             mMovementPhase = MovementPattern.GOING_UP;
             mSpeedCalculated = false;
 
-            mTimeOfLastPatternChange = System.currentTimeMillis();
+            mTimeOfLastPatternChange = mTicks;
         } else if (mCurrentPattern == 2 && mHp < 0.25 * mStartingHp) {
             mCurrentPattern++;
             mMovementPhase = MovementPattern.RESET;
             mSpeedCalculated = false;
 
-            mTimeOfLastPatternChange = System.currentTimeMillis();
+            mTimeOfLastPatternChange = mTicks;
         }
     }
 

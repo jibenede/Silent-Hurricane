@@ -2,8 +2,6 @@ package com.puc.sh.model.foes;
 
 import android.graphics.PointF;
 
-import com.puc.sh.model.bullets.Bullet;
-import com.puc.sh.model.bullets.CollisionUtils;
 import com.puc.soa.AuroraContext;
 import com.puc.soa.Globals;
 
@@ -32,7 +30,7 @@ public class StalkerA extends Foe {
     private long mTimeUntilNextShot;
 
     public StalkerA(AuroraContext context, int hp, Origin origin) {
-        super(context, hp);
+        super(context, hp, context.getAssets().stalkerA);
 
         if (origin == Origin.BOTTOM_LEFT) {
             mPosition = new PointF(PADDING, Globals.CANVAS_HEIGHT + PADDING);
@@ -43,7 +41,6 @@ public class StalkerA extends Foe {
         mPhase = State.GOING_UP;
         mRadius = Globals.CANVAS_WIDTH / 2 - 50;
         mAngle = 0;
-        mBitmap = context.getAssets().stalkerA;
         mOrigin = origin;
 
         mTimeUntilNextShot = 1000;
@@ -59,13 +56,6 @@ public class StalkerA extends Foe {
     public boolean isOnScreen() {
         return mHp > 0
                 && !(mPhase == State.GOING_DOWN && mPosition.y > Globals.CANVAS_HEIGHT + 100);
-    }
-
-    @Override
-    public boolean collidesWith(Bullet b) {
-        return CollisionUtils.circleCollide(mPosition.x, mPosition.y,
-                mShipRadius, b.mPosition.x, b.mPosition.y, b.mSize);
-
     }
 
     @Override
@@ -116,10 +106,10 @@ public class StalkerA extends Foe {
                 vX /= factor;
                 vY /= factor;
 
-                mBullet.initializeLinearBullet(mContext.getAssets().greenBullet,
-                        false, (int) vX, (int) vY,
-                        mPosition.x + mBitmap.getWidth() / 2, mPosition.y
-                                + mBitmap.getHeight() / 2, 6000, 12, 1);
+                mBullet.initializeLinearBullet(
+                        mContext.getAssets().greenBullet, false, (int) vX,
+                        (int) vY, mPosition.x + mBitmap.getWidth() / 2,
+                        mPosition.y + mBitmap.getHeight() / 2, 6000, 12, 1);
                 mContext.getState().mEnemyBullets.addBullet(mBullet);
             }
 

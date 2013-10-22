@@ -2,8 +2,6 @@ package com.puc.sh.model.foes;
 
 import android.graphics.PointF;
 
-import com.puc.sh.model.bullets.Bullet;
-import com.puc.sh.model.bullets.CollisionUtils;
 import com.puc.soa.AuroraContext;
 import com.puc.soa.Globals;
 
@@ -17,9 +15,8 @@ public class PredatorA extends Foe {
     private long mTimeUntilNextShot;
 
     public PredatorA(AuroraContext context, int hp, int xPosition) {
-        super(context, hp);
+        super(context, hp, context.getAssets().predatorA);
 
-        mBitmap = context.getAssets().predatorA;
         mPosition = new PointF(xPosition - mBitmap.getWidth() / 2,
                 -mBitmap.getHeight());
         mShipRadius = mBitmap.getWidth() / 2;
@@ -38,13 +35,6 @@ public class PredatorA extends Foe {
     }
 
     @Override
-    public boolean collidesWith(Bullet b) {
-        return CollisionUtils.circleCollide(mPosition.x, mPosition.y,
-                mShipRadius, b.mPosition.x, b.mPosition.y, b.mSize);
-
-    }
-
-    @Override
     protected void updatePosition(long interval) {
         mPosition.y += SPEED * (interval / 1000.0);
 
@@ -60,10 +50,10 @@ public class PredatorA extends Foe {
                 float vX = (float) (Math.cos(angle) * BULLET_SPEED);
                 float vY = (float) (Math.sin(angle) * BULLET_SPEED);
 
-                mBullet.initializeLinearBullet(mContext.getAssets().greenBullet,
-                        false, (int) vX, (int) vY,
-                        mPosition.x + mBitmap.getWidth() / 2, mPosition.y
-                                + mBitmap.getHeight(), 6000, 12, 1);
+                mBullet.initializeLinearBullet(
+                        mContext.getAssets().greenBullet, false, (int) vX,
+                        (int) vY, mPosition.x + mBitmap.getWidth() / 2,
+                        mPosition.y + mBitmap.getHeight(), 6000, 12, 1);
 
                 // sBullet.initializeBullet(false, (int) vX, (int) vY,
                 // mPosition.x + mBitmap.getWidth() / 2, mPosition.y +

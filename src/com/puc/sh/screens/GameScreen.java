@@ -48,8 +48,7 @@ public class GameScreen extends Screen implements SensorEventListener {
     private Rect mTempRect1;
     private Rect mTempRect2;
 
-    private int mAlpha;
-    private int mWidth;
+    private long mTicks;
 
     public GameScreen(AuroraContext context, RenderView renderer, Stage stage) {
         super(context, renderer);
@@ -135,6 +134,18 @@ public class GameScreen extends Screen implements SensorEventListener {
             if (b.mDisplay) {
                 mCanvas.drawBitmap(b.mBitmap, b.mPosition.x, b.mPosition.y,
                         null);
+
+                // mTempRect1.left = 0;
+                // mTempRect1.top = 0;
+                // mTempRect1.right = b.mBitmap.getWidth();
+                // mTempRect1.bottom = b.mBitmap.getHeight();
+                //
+                // mTempRect2.left = (int) b.mPosition.x;
+                // mTempRect2.top = (int) b.mPosition.y;
+                // mTempRect2.right = (int) (b.mPosition.x + b.mSize);
+                // mTempRect2.bottom = (int) (b.mPosition.y + b.mSize);
+                //
+                // mCanvas.drawBitmap(b.mBitmap, mTempRect1, mTempRect2, null);
             }
         }
         bullets = mState.mEnemyBullets;
@@ -162,7 +173,7 @@ public class GameScreen extends Screen implements SensorEventListener {
     private void drawBossLifeBar() {
         if (mStage.hasBossAppeared()) {
             if (mTimeSinceBossAppeared == 0) {
-                mTimeSinceBossAppeared = System.currentTimeMillis();
+                mTimeSinceBossAppeared = mTicks;
             } else {
                 mTempRect1.left = 0;
                 mTempRect1.top = 0;
@@ -172,7 +183,7 @@ public class GameScreen extends Screen implements SensorEventListener {
                 mTempRect2.top = 10;
                 mTempRect2.bottom = mContext.getAssets().bossHp.getHeight() + 10;
 
-                int delta = (int) (System.currentTimeMillis() - mTimeSinceBossAppeared);
+                int delta = (int) (mTicks - mTimeSinceBossAppeared);
                 if (delta < 1000) {
                     mTempRect1.right = 20 + (int) (mContext.getAssets().bossHp
                             .getWidth() * (delta / 1000f));
@@ -201,6 +212,7 @@ public class GameScreen extends Screen implements SensorEventListener {
 
     @Override
     public void update(long interval) {
+        mTicks += interval;
         mStage.update(interval);
         mState.update(interval);
 
@@ -239,13 +251,13 @@ public class GameScreen extends Screen implements SensorEventListener {
     }
 
     public void onSensorChanged(SensorEvent event) {
-        if (System.currentTimeMillis() - mTimeOfLastBomb > 3000
+        if (mTicks - mTimeOfLastBomb > 3000
                 && (mState.mShip.mStatus == PlayerState.ALIVE || mState.mShip.mStatus == PlayerState.REVIVING)
                 && (event.values[0] > Globals.ACCELEROMETER_THRESHOLD || event.values[0] < -Globals.ACCELEROMETER_THRESHOLD)) {
             if (mState.mShip.mBombs > 0) {
                 mState.mShip.mBombs--;
                 mState.detonateBomb();
-                mTimeOfLastBomb = System.currentTimeMillis();
+                mTimeOfLastBomb = mTicks;
             }
         }
     }

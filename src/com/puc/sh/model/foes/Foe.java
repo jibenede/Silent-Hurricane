@@ -5,12 +5,11 @@ import android.graphics.PointF;
 
 import com.puc.sh.model.Renderable;
 import com.puc.sh.model.bullets.Bullet;
+import com.puc.sh.model.bullets.CollisionUtils;
 import com.puc.soa.AuroraContext;
 import com.puc.soa.utils.BulletArray;
 
 public abstract class Foe implements Renderable {
-    public static final int HORIZONTAL_CENTER = -1000;
-    public static final int VERTICAL_TOP = -1001;
 
     protected AuroraContext mContext;
     public int mHp;
@@ -21,14 +20,17 @@ public abstract class Foe implements Renderable {
 
     protected Bullet mBullet;
     protected boolean mInvulnerable;
+    protected long mTicks;
 
-    public Foe(AuroraContext context, int hp) {
+    public Foe(AuroraContext context, int hp, Bitmap bitmap) {
         mContext = context;
         mHp = mOriginalHp = hp;
         mBullet = new Bullet(context);
+        mBitmap = bitmap;
     }
 
     public void update(long interval) {
+        mTicks += interval;
         if (isOnScreen()) {
             updatePattern();
             updatePosition(interval);
@@ -59,12 +61,18 @@ public abstract class Foe implements Renderable {
                 b.mDisplay = false;
                 if (mHp <= 0 && holdsStage()) {
                     mContext.getState().getCurrentStage().unholdTimer();
+                    onDestroyed();
+                    break;
                 }
             }
         }
     }
 
-    public abstract boolean collidesWith(Bullet b);
+    public boolean collidesWith(Bullet b) {
+        return CollisionUtils.circleCollide(mPosition.x, mPosition.y,
+                mBitmap.getWidth() / 2, b.mPosition.x, b.mPosition.y,
+                b.mSize / 2);
+    }
 
     public abstract void fireBullets(long interval);
 
@@ -74,6 +82,10 @@ public abstract class Foe implements Renderable {
 
     public boolean holdsStage() {
         return false;
+    }
+
+    protected void onDestroyed() {
+
     }
 
     public void bomb() {

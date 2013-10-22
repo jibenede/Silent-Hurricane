@@ -2,8 +2,6 @@ package com.puc.sh.model.foes;
 
 import android.graphics.PointF;
 
-import com.puc.sh.model.bullets.Bullet;
-import com.puc.sh.model.bullets.CollisionUtils;
 import com.puc.soa.AuroraContext;
 import com.puc.soa.Globals;
 import com.puc.soa.utils.Utils;
@@ -20,9 +18,8 @@ public class Stingray extends Foe {
 
     public Stingray(AuroraContext context, int hp, int yPosition,
             Direction direction) {
-        super(context, hp);
+        super(context, hp, context.getAssets().stingray);
 
-        mBitmap = mContext.getAssets().stingray;
         mDirection = direction;
 
         if (direction == Direction.RIGHT) {
@@ -59,12 +56,6 @@ public class Stingray extends Foe {
             mPosition.x -= SPEED * (interval / 1000f);
         }
 
-    }
-
-    @Override
-    public boolean collidesWith(Bullet b) {
-        return CollisionUtils.circleCollide(mPosition.x, mPosition.y,
-                mBitmap.getWidth() / 2, b.mPosition.x, b.mPosition.y, b.mSize);
     }
 
     @Override
