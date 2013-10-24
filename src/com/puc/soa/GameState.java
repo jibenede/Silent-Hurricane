@@ -18,8 +18,6 @@ public class GameState {
 
     public Player mShip;
 
-    private int mPlayerBombs;
-
     public BulletArray mEnemyBullets;
     public BulletArray mPlayerBullets;
 
@@ -40,8 +38,6 @@ public class GameState {
     public GameState(Context context, AssetsHolder assets) {
         mAssets = assets;
 
-        mPlayerBombs = Globals.DEFAULT_BOMBS;
-
         mContext = new AuroraContext(context, this, assets);
 
         mEnemyBullets = new BulletArray(mContext, Globals.BULLET_LIMIT);
@@ -53,6 +49,19 @@ public class GameState {
         mAnimations = new CircularArray(Globals.ANIMATIONS_LIMIT);
 
         mBullet = new Bullet(mContext);
+    }
+
+    public void reset() {
+        mEnemyBullets.emptyArray();
+        mPlayerBullets.emptyArray();
+        mAnimations.emptyArray();
+        mEnemies.emptyArray();
+        mTicks = 0;
+        mTimeOfLastBomb = 0;
+        mScore = 0;
+        mBombActivated = false;
+
+        mShip.reset();
     }
 
     public Stage getCurrentStage() {

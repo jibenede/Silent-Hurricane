@@ -40,6 +40,14 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    public void onBackPressed() {
+        boolean handled = renderView.onBackPressed();
+        if (!handled) {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     public void onPause() {
         wakeLock.release();
         renderView.pause();

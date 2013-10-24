@@ -111,8 +111,9 @@ public class StageSelectionScreen extends Screen {
 
     private void onFadeFinished() {
         Stage stage = new Stage2(mContext, mRenderer);
-        GameScreen screen = new GameScreen(mContext, mRenderer, stage);
         mContext.getState().setCurrentStage(stage);
+        mContext.getState().reset();
+        GameScreen screen = new GameScreen(mContext, mRenderer, stage);
         mRenderer.transitionTo(screen);
     }
 

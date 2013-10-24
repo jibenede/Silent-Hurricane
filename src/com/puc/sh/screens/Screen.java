@@ -27,4 +27,8 @@ public abstract class Screen {
     public boolean onTouchEvent(MotionEvent event) {
         return false;
     }
+
+    public boolean onBackPressed() {
+        return false;
+    }
 }

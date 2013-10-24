@@ -16,9 +16,10 @@ public class Player {
         ALIVE, DEAD, REVIVING, DEFEATED
     }
 
-    public static final int BULLET_INTERVAL = 200;
-    public static final int TIME_FOR_REVIVAL = 2000;
-    public static final int TIME_OF_INVULNERABILITY = 3000;
+    public static final int BULLET_INTERVAL = 80;
+    public static final int TIME_FOR_REVIVAL = 1000;
+    public static final int TIME_OF_INVULNERABILITY = 2000;
+    public static final int BULLET_SPEED = 1500;
 
     private AuroraContext mContext;
     private int mStartX;
@@ -48,7 +49,15 @@ public class Player {
         mContext = context;
 
         mBitmap = context.getAssets().ship;
+        this.b = new Bullet(context);
 
+        mAssets = context.getAssets();
+        mState = context.getState();
+
+        reset();
+    }
+
+    public void reset() {
         mStartX = (Globals.CANVAS_WIDTH - mBitmap.getWidth()) / 2;
         mStartY = Globals.CANVAS_HEIGHT - mBitmap.getHeight() - 50;
         mShipPosition = new PointF(mStartX, mStartY);
@@ -58,12 +67,8 @@ public class Player {
         mBombs = Globals.DEFAULT_BOMBS;
 
         this.timeSinceLastBullet = 0;
-        this.b = new Bullet(context);
 
         mStatus = PlayerState.ALIVE;
-
-        mAssets = context.getAssets();
-        mState = context.getState();
     }
 
     public boolean shouldDraw() {
@@ -131,15 +136,15 @@ public class Player {
     private void fireBullets() {
         float x = mShipPosition.x + mBitmap.getWidth() / 2 - 16;
 
-        b.initializeLinearBullet(mAssets.plasma, true, -50, -1000, x,
+        b.initializeLinearBullet(mAssets.plasma, true, -50, -BULLET_SPEED, x,
                 mShipPosition.y, 2000, 32, 1);
         mState.mPlayerBullets.addBullet(b);
 
-        b.initializeLinearBullet(mAssets.plasma, true, 0, -1000, x,
+        b.initializeLinearBullet(mAssets.plasma, true, 0, -BULLET_SPEED, x,
                 mShipPosition.y, 2000, 32, 1);
         mState.mPlayerBullets.addBullet(b);
 
-        b.initializeLinearBullet(mAssets.plasma, true, 50, -1000, x,
+        b.initializeLinearBullet(mAssets.plasma, true, 50, -BULLET_SPEED, x,
                 mShipPosition.y, 2000, 32, 1);
         mState.mPlayerBullets.addBullet(b);
     }

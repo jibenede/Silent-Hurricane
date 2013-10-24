@@ -67,7 +67,7 @@ public class Stage2 extends Stage {
             foe.setPositions(Globals.CANVAS_WIDTH / 2 - foe.mBitmap.getWidth()
                     / 2, -foe.mBitmap.getHeight(), Globals.CANVAS_WIDTH / 2
                     - foe.mBitmap.getWidth() / 2, 250);
-            addFoeAtTime(foe, 60000);
+            addFoeAtTime(foe, 62000);
         }
 
         for (int i = 0; i < 14; i++) {
@@ -79,10 +79,10 @@ public class Stage2 extends Stage {
                     Stingray.Direction.RIGHT);
             Stingray foe4 = new Stingray(context, 10, 280,
                     Stingray.Direction.LEFT);
-            addFoeAtTime(foe1, 62000 + 2000 * i);
-            addFoeAtTime(foe2, 62000 + 2000 * i);
-            addFoeAtTime(foe3, 62000 + 2000 * i);
-            addFoeAtTime(foe4, 62000 + 2000 * i);
+            addFoeAtTime(foe1, 64000 + 2000 * i);
+            addFoeAtTime(foe2, 64000 + 2000 * i);
+            addFoeAtTime(foe3, 64000 + 2000 * i);
+            addFoeAtTime(foe4, 64000 + 2000 * i);
         }
 
         prepare();

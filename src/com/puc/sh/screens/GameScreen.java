@@ -1,5 +1,8 @@
 package com.puc.sh.screens;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -15,6 +18,8 @@ import android.view.MotionEvent;
 import com.puc.sh.model.Animation;
 import com.puc.sh.model.Audio;
 import com.puc.sh.model.Player.PlayerState;
+import com.puc.sh.model.Widget;
+import com.puc.sh.model.Widget.OnTouchListener;
 import com.puc.sh.model.bullets.Bullet;
 import com.puc.sh.model.foes.Foe;
 import com.puc.sh.model.stages.Stage;
@@ -27,7 +32,9 @@ import com.puc.soa.utils.BulletArray;
 import com.puc.soa.utils.CircularArray;
 
 public class GameScreen extends Screen implements SensorEventListener {
-    private static final int BACKGROUND_SWITCH_TIME = 100;
+    private enum GameplayState {
+        RESUME, PAUSED, VICTORY, DEFEAT
+    }
 
     private Bitmap mBitmap;
     private Canvas mCanvas;
@@ -50,6 +57,10 @@ public class GameScreen extends Screen implements SensorEventListener {
 
     private long mTicks;
 
+    private GameplayState mGameplayState;
+
+    private List<Widget> mWidgets;
+
     public GameScreen(AuroraContext context, RenderView renderer, Stage stage) {
         super(context, renderer);
 
@@ -61,6 +72,9 @@ public class GameScreen extends Screen implements SensorEventListener {
 
         mState = context.getState();
         mAssets = context.getAssets();
+
+        mGameplayState = GameplayState.RESUME;
+        mWidgets = new ArrayList<Widget>();
 
         mSourceRect = new Rect(0, mBackgroundDelta, Globals.CANVAS_WIDTH,
                 mBackgroundDelta + Globals.CANVAS_HEIGHT);
@@ -83,9 +97,44 @@ public class GameScreen extends Screen implements SensorEventListener {
         return mBitmap;
     }
 
+    @Override
+    public boolean onBackPressed() {
+        if (mGameplayState == GameplayState.RESUME) {
+            enablePause();
+        } else {
+            exit();
+        }
+        return true;
+    }
+
+    private void exit() {
+        StageSelectionScreen screen = new StageSelectionScreen(mContext,
+                mRenderer);
+        mRenderer.transitionTo(screen);
+    }
+
+    private void enablePause() {
+        mGameplayState = GameplayState.PAUSED;
+        Widget resume = new Widget(mContext.getAssets().buttonResume, 50, 600);
+        resume.setListener(new OnTouchListener() {
+            public void onTouchEvent(MotionEvent event) {
+                mGameplayState = GameplayState.RESUME;
+            }
+        });
+
+        Widget exit = new Widget(mContext.getAssets().buttonExit, 380, 600);
+        exit.setListener(new OnTouchListener() {
+            public void onTouchEvent(MotionEvent event) {
+                exit();
+            }
+        });
+
+        mWidgets.clear();
+        mWidgets.add(resume);
+        mWidgets.add(exit);
+    }
+
     private void drawCanvas() {
-        // mCanvas.drawBitmap(mStage.getBackground(), 0, mBackgroundDelta,
-        // null);
         mCanvas.drawBitmap(mStage.getBackground(), mSourceRect, mDestRect, null);
 
         // mPaint.setColor(Color.BLACK);
@@ -102,6 +151,16 @@ public class GameScreen extends Screen implements SensorEventListener {
             mCanvas.drawBitmap(mState.mShip.mBitmap,
                     mState.mShip.mShipPosition.x, mState.mShip.mShipPosition.y,
                     null);
+
+            // if ((mTicks % 1000) / 500 == 0) {
+            mPaint.setColor(Color.RED);
+            mCanvas.drawCircle(
+                    mState.mShip.mShipPosition.x
+                            + mState.mShip.mBitmap.getWidth() / 2,
+                    mState.mShip.mShipPosition.y
+                            + mState.mShip.mBitmap.getHeight() / 2, 5, mPaint);
+            // }
+
         }
 
         CircularArray animations = mState.mAnimations;
@@ -168,6 +227,26 @@ public class GameScreen extends Screen implements SensorEventListener {
         mCanvas.drawBitmap(mAssets.livesIcon, 370, 10, null);
         mCanvas.drawText("x" + (Math.max(mState.mShip.mLives - 1, 0)), 425, 30,
                 mPaint);
+
+        if (mGameplayState == GameplayState.PAUSED) {
+            drawPauseScreen();
+        }
+    }
+
+    private void drawPauseScreen() {
+        mPaint.setColor(Color.BLACK);
+        mPaint.setAlpha(128);
+
+        mTempRect1.top = 0;
+        mTempRect1.right = Globals.CANVAS_WIDTH;
+        mTempRect1.bottom = Globals.CANVAS_HEIGHT;
+        mTempRect1.left = 0;
+
+        mCanvas.drawRect(mTempRect1, mPaint);
+        for (Widget w : mWidgets) {
+            mCanvas.drawBitmap(w.mBitmap, w.X, w.Y, null);
+        }
+
     }
 
     private void drawBossLifeBar() {
@@ -212,31 +291,39 @@ public class GameScreen extends Screen implements SensorEventListener {
 
     @Override
     public void update(long interval) {
-        mTicks += interval;
-        mStage.update(interval);
-        mState.update(interval);
+        if (mGameplayState == GameplayState.RESUME) {
+            mTicks += interval;
+            mStage.update(interval);
+            mState.update(interval);
 
-        if (mBackgroundDelta > 0) {
-            mBackgroundDelta -= 1;
-            mSourceRect.top -= 1;
-            mSourceRect.bottom -= 1;
+            if (mBackgroundDelta > 0) {
+                mBackgroundDelta -= 1;
+                mSourceRect.top -= 1;
+                mSourceRect.bottom -= 1;
+            }
         }
-
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            int shipX = (int) event.getX() - mAssets.ship.getWidth() / 2;
-            int shipY = (int) event.getY() - mAssets.ship.getHeight() / 2;
-            mState.setDestination(shipX, shipY);
-        } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
-            int shipX = (int) event.getX() - mAssets.ship.getWidth() / 2;
-            int shipY = (int) event.getY() - mAssets.ship.getHeight() / 2;
-            mState.setDestination(shipX, shipY);
-        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-            mState.setDestination(-1, -1);
+        if (mGameplayState == GameplayState.RESUME) {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                int shipX = (int) event.getX() - mAssets.ship.getWidth() / 2;
+                int shipY = (int) event.getY() - mAssets.ship.getHeight() / 2;
+                mState.setDestination(shipX, shipY);
+            } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                int shipX = (int) event.getX() - mAssets.ship.getWidth() / 2;
+                int shipY = (int) event.getY() - mAssets.ship.getHeight() / 2;
+                mState.setDestination(shipX, shipY);
+            } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                mState.setDestination(-1, -1);
+            }
+        } else {
+            for (Widget w : mWidgets) {
+                w.hitTest(event);
+            }
         }
+
         return true;
     }
 

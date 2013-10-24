@@ -16,7 +16,7 @@ public class Eclipse extends Foe {
     }
 
     private final int PIVOT = 500;
-    private final int BULLET_SPEED = 200;
+    private final int BULLET_SPEED = 100;
     private final long FIRING_INTERVAL = 500;
     private final int SPEED = 150;
     private final int RADIUS = 250;

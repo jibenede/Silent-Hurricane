@@ -52,6 +52,7 @@ public class RenderView extends SurfaceView implements Runnable {
                 mAssets);
         mCurrentScreen = new MainScreen(auroraContext, this);
         mCurrentAudio = mAssets.intro;
+        mCurrentAudio.prepare();
 
         mSensorManager = (SensorManager) context
                 .getSystemService(Context.SENSOR_SERVICE);
@@ -72,6 +73,10 @@ public class RenderView extends SurfaceView implements Runnable {
         }
     }
 
+    public boolean onBackPressed() {
+        return mCurrentScreen.onBackPressed();
+    }
+
     public void pause() {
         if (mCurrentScreen instanceof GameScreen) {
             mSensorManager.unregisterListener((GameScreen) mCurrentScreen);
@@ -88,7 +93,7 @@ public class RenderView extends SurfaceView implements Runnable {
     }
 
     public void destroy() {
-        mCurrentAudio.dispose();
+        mCurrentAudio.stop();
     }
 
     public void run() {
@@ -123,11 +128,16 @@ public class RenderView extends SurfaceView implements Runnable {
     }
 
     public void transitionTo(Screen screen) {
+        if (mCurrentScreen instanceof GameScreen) {
+            mSensorManager.unregisterListener((GameScreen) mCurrentScreen);
+        }
+
         mCurrentScreen = screen;
         Audio audio = screen.getAudio();
         if (audio != null && audio != mCurrentAudio) {
-            mCurrentAudio.dispose();
+            mCurrentAudio.stop();
             mCurrentAudio = audio;
+            mCurrentAudio.prepare();
             mCurrentAudio.play();
         }
 
@@ -142,11 +152,12 @@ public class RenderView extends SurfaceView implements Runnable {
     }
 
     public void stopAudio() {
-        mCurrentAudio.dispose();
+        mCurrentAudio.stop();
     }
 
     public void startAudio(Audio audio) {
         mCurrentAudio = audio;
+        mCurrentAudio.prepare();
         mCurrentAudio.play();
     }
 

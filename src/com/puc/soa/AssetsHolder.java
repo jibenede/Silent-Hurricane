@@ -42,6 +42,11 @@ public class AssetsHolder {
     public Bitmap buttonStage2;
     public Bitmap buttonStage3;
 
+    public Bitmap buttonRetry;
+    public Bitmap buttonResume;
+    public Bitmap buttonNextStage;
+    public Bitmap buttonExit;
+
     public Bitmap bossHp;
     public Bitmap bossIcon;
     public Bitmap livesIcon;
@@ -150,6 +155,18 @@ public class AssetsHolder {
             is = manager.open("images/button_level3.png");
             original = BitmapFactory.decodeStream(is);
             buttonStage3 = Bitmap.createScaledBitmap(original, 265, 60, false);
+
+            is = manager.open("images/button_resume.png");
+            original = BitmapFactory.decodeStream(is);
+            buttonResume = Bitmap.createScaledBitmap(original, 290, 250, false);
+
+            is = manager.open("images/button_retry.png");
+            original = BitmapFactory.decodeStream(is);
+            buttonRetry = Bitmap.createScaledBitmap(original, 290, 250, false);
+
+            is = manager.open("images/button_exit.png");
+            original = BitmapFactory.decodeStream(is);
+            buttonExit = Bitmap.createScaledBitmap(original, 290, 250, false);
 
             is = manager.open("images/boss_hp.png");
             original = BitmapFactory.decodeStream(is);
