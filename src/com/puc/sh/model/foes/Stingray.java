@@ -64,9 +64,10 @@ public class Stingray extends Foe {
         if (mTimeUntilNextShot < 0) {
             int random = 500 + Utils.sRandom.nextInt(1500);
 
-            mBullet.initializeLinearClusterBullet(mContext.getAssets().laser2,
-                    0, 400, mPosition.x + mBitmap.getWidth() / 2, mPosition.y
-                            + mBitmap.getHeight() / 2, random, 16, 1);
+            mBullet.initializeLinearClusterBullet(
+                    mContext.getAssets().purpleBullet18, 0, 400, mPosition.x
+                            + mBitmap.getWidth() / 2,
+                    mPosition.y + mBitmap.getHeight() / 2, random, 18, 1);
             mContext.getState().mEnemyBullets.addBullet(mBullet);
 
             mTimeUntilNextShot = 500 + Utils.sRandom.nextInt(500);

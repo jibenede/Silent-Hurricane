@@ -3,7 +3,6 @@ package com.puc.soa.utils;
 import java.util.Random;
 
 public class Utils {
-
     public static final Random sRandom = new Random();
 
     public static <T extends Comparable<T>> void quicksort(T[] values) {

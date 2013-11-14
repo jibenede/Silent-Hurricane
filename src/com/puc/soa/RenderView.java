@@ -35,6 +35,7 @@ public class RenderView extends SurfaceView implements Runnable {
 
     private Screen mCurrentScreen;
     private Audio mCurrentAudio;
+    private AuroraContext mContext;
 
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
@@ -48,9 +49,8 @@ public class RenderView extends SurfaceView implements Runnable {
 
         mState = new GameState(context, mAssets);
 
-        AuroraContext auroraContext = new AuroraContext(context, mState,
-                mAssets);
-        mCurrentScreen = new MainScreen(auroraContext, this);
+        mContext = new AuroraContext(context, mState, mAssets);
+        mCurrentScreen = new MainScreen(mContext, this);
         mCurrentAudio = mAssets.intro;
         mCurrentAudio.prepare();
 
@@ -66,6 +66,9 @@ public class RenderView extends SurfaceView implements Runnable {
         renderThread.start();
 
         mCurrentAudio.play();
+        if (mContext.getState().getCurrentStage() != null) {
+            mContext.getState().getCurrentStage().unlockAudio();
+        }
 
         if (mCurrentScreen instanceof GameScreen) {
             mSensorManager.registerListener((GameScreen) mCurrentScreen,
@@ -80,6 +83,11 @@ public class RenderView extends SurfaceView implements Runnable {
     public void pause() {
         if (mCurrentScreen instanceof GameScreen) {
             mSensorManager.unregisterListener((GameScreen) mCurrentScreen);
+            ((GameScreen) mCurrentScreen).enablePause();
+        }
+
+        if (mContext.getState().getCurrentStage() != null) {
+            mContext.getState().getCurrentStage().lockAudio();
         }
 
         running = false;
@@ -135,10 +143,12 @@ public class RenderView extends SurfaceView implements Runnable {
         mCurrentScreen = screen;
         Audio audio = screen.getAudio();
         if (audio != null && audio != mCurrentAudio) {
+            mContext.getState().getCurrentStage().lockAudio();
             mCurrentAudio.stop();
             mCurrentAudio = audio;
             mCurrentAudio.prepare();
             mCurrentAudio.play();
+            mContext.getState().getCurrentStage().unlockAudio();
         }
 
         if (mCurrentScreen instanceof GameScreen) {

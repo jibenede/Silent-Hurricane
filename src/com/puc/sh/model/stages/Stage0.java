@@ -7,6 +7,7 @@ import com.puc.sh.model.foes.Angel;
 import com.puc.sh.model.foes.Raven;
 import com.puc.sh.model.foes.Stingray;
 import com.puc.sh.model.foes.Volt;
+import com.puc.sh.model.foes.boss.FirstBoss;
 import com.puc.soa.AuroraContext;
 import com.puc.soa.Globals;
 import com.puc.soa.RenderView;
@@ -69,6 +70,9 @@ public class Stage0 extends Stage {
             addFoeAtTime(foe2, 38000 + 2000 * i);
         }
 
+        FirstBoss boss = new FirstBoss(context, 1800);
+        addFoeAtTime(boss, 58000);
+
         prepare();
     }
 
@@ -79,7 +83,7 @@ public class Stage0 extends Stage {
 
     @Override
     public Audio getBossTheme() {
-        return mContext.getAssets().music;
+        return mContext.getAssets().boss1_theme;
     }
 
     @Override

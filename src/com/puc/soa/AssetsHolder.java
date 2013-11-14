@@ -19,6 +19,8 @@ public class AssetsHolder {
     public Bitmap ship;
 
     public Bitmap boss;
+    public Bitmap jawus;
+    public Bitmap komashr;
 
     public Bitmap stalkerA;
     public Bitmap predatorA;
@@ -27,12 +29,16 @@ public class AssetsHolder {
 
     // Bullet sprites
     public Bitmap plasma;
-    public Bitmap greenBullet;
-    public Bitmap laser2;
-    public Bitmap laser3;
-    public Bitmap fireball;
-    public Bitmap blueBullet;
-    public Bitmap redBullet;
+    public Bitmap heavy;
+
+    public Bitmap purpleBullet18;
+    public Bitmap greenBullet12;
+    public Bitmap yellowBullet24;
+    public Bitmap blueBullet12;
+    public Bitmap blueBullet96;
+    public Bitmap redBullet36;
+    public Bitmap redBullet12;
+    public Bitmap whiteBullet48;
 
     public Bitmap mainBackground;
     // public Bitmap stageBackground;
@@ -51,12 +57,17 @@ public class AssetsHolder {
     public Bitmap bossIcon;
     public Bitmap livesIcon;
 
-    public Audio music;
+    public Bitmap sword;
+
     public Audio intro;
+    public Audio boss1_theme;
+    public Audio boss2_theme;
     public Audio stage1_audio;
+    public Audio stage2_audio;
 
     public Bitmap[] death;
     public Bitmap[] bomb;
+    public Bitmap[] blueExplosion;
 
     private Context context;
     private Point mSize;
@@ -80,6 +91,10 @@ public class AssetsHolder {
             original = BitmapFactory.decodeStream(is);
             plasma = Bitmap.createScaledBitmap(original, 32, 32, false);
 
+            is = manager.open("images/bullet_heavy.png");
+            original = BitmapFactory.decodeStream(is);
+            heavy = Bitmap.createScaledBitmap(original, 24, 24, false);
+
             is = manager.open("images/boss.png");
             original = BitmapFactory.decodeStream(is);
             int dimX = (int) TypedValue.applyDimension(
@@ -90,29 +105,45 @@ public class AssetsHolder {
                             .getDisplayMetrics());
             boss = Bitmap.createScaledBitmap(original, dimX, dimY, false);
 
+            is = manager.open("images/jawus.png");
+            original = BitmapFactory.decodeStream(is);
+            jawus = Bitmap.createScaledBitmap(original, 250, 270, false);
+
+            is = manager.open("images/komashr.png");
+            original = BitmapFactory.decodeStream(is);
+            komashr = Bitmap.createScaledBitmap(original, 220, 300, false);
+
             is = manager.open("images/bullet_green.png");
             original = BitmapFactory.decodeStream(is);
-            greenBullet = Bitmap.createScaledBitmap(original, 12, 12, false);
+            greenBullet12 = Bitmap.createScaledBitmap(original, 12, 12, false);
 
-            is = manager.open("images/laser2.png");
+            is = manager.open("images/bullet_purple.png");
             original = BitmapFactory.decodeStream(is);
-            laser2 = Bitmap.createScaledBitmap(original, 16, 16, false);
+            purpleBullet18 = Bitmap.createScaledBitmap(original, 18, 18, false);
 
-            is = manager.open("images/laser3.png");
+            is = manager.open("images/bullet_yellow.png");
             original = BitmapFactory.decodeStream(is);
-            laser3 = Bitmap.createScaledBitmap(original, 12, 12, false);
+            yellowBullet24 = Bitmap.createScaledBitmap(original, 24, 24, false);
 
-            is = manager.open("images/fireball.png");
+            is = manager.open("images/bullet_blue_s.png");
             original = BitmapFactory.decodeStream(is);
-            fireball = Bitmap.createScaledBitmap(original, 24, 24, false);
+            blueBullet12 = Bitmap.createScaledBitmap(original, 12, 12, false);
 
             is = manager.open("images/bullet_blue.png");
             original = BitmapFactory.decodeStream(is);
-            blueBullet = Bitmap.createScaledBitmap(original, 96, 96, false);
+            blueBullet96 = Bitmap.createScaledBitmap(original, 96, 96, false);
 
             is = manager.open("images/bullet_red.png");
             original = BitmapFactory.decodeStream(is);
-            redBullet = Bitmap.createScaledBitmap(original, 36, 36, false);
+            redBullet12 = Bitmap.createScaledBitmap(original, 12, 12, false);
+
+            is = manager.open("images/bullet_red.png");
+            original = BitmapFactory.decodeStream(is);
+            redBullet36 = Bitmap.createScaledBitmap(original, 36, 36, false);
+
+            is = manager.open("images/bullet_white.png");
+            original = BitmapFactory.decodeStream(is);
+            whiteBullet48 = Bitmap.createScaledBitmap(original, 48, 48, false);
 
             is = manager.open("images/stalker_a.png");
             original = BitmapFactory.decodeStream(is);
@@ -144,17 +175,22 @@ public class AssetsHolder {
             original = BitmapFactory.decodeStream(is);
             buttonPlay = Bitmap.createScaledBitmap(original, 265, 140, false);
 
+            is = manager.open("images/button_next.png");
+            original = BitmapFactory.decodeStream(is);
+            buttonNextStage = Bitmap.createScaledBitmap(original, 290, 250,
+                    false);
+
             is = manager.open("images/button_level1.png");
             original = BitmapFactory.decodeStream(is);
-            buttonStage1 = Bitmap.createScaledBitmap(original, 265, 140, false);
+            buttonStage1 = Bitmap.createScaledBitmap(original, 580, 140, false);
 
             is = manager.open("images/button_level2.png");
             original = BitmapFactory.decodeStream(is);
-            buttonStage2 = Bitmap.createScaledBitmap(original, 265, 140, false);
+            buttonStage2 = Bitmap.createScaledBitmap(original, 580, 140, false);
 
             is = manager.open("images/button_level3.png");
             original = BitmapFactory.decodeStream(is);
-            buttonStage3 = Bitmap.createScaledBitmap(original, 265, 60, false);
+            buttonStage3 = Bitmap.createScaledBitmap(original, 580, 140, false);
 
             is = manager.open("images/button_resume.png");
             original = BitmapFactory.decodeStream(is);
@@ -176,9 +212,15 @@ public class AssetsHolder {
             original = BitmapFactory.decodeStream(is);
             bossIcon = Bitmap.createScaledBitmap(original, 150, 35, false);
 
-            music = new Audio(manager.openFd("audio/audio3.mp3"));
+            is = manager.open("images/sword_sprite.png");
+            original = BitmapFactory.decodeStream(is);
+            sword = Bitmap.createScaledBitmap(original, 30, 60, false);
+
+            boss1_theme = new Audio(manager.openFd("audio/boss1_theme.mp3"));
+            boss2_theme = new Audio(manager.openFd("audio/boss2_theme.mp3"));
             intro = new Audio(manager.openFd("audio/intro.mp3"));
             stage1_audio = new Audio(manager.openFd("audio/stage1_audio.mp3"));
+            stage2_audio = new Audio(manager.openFd("audio/stage2_audio.mp3"));
 
             is = manager.open("images/explosion.png");
             original = BitmapFactory.decodeStream(is);
@@ -189,6 +231,11 @@ public class AssetsHolder {
             original = BitmapFactory.decodeStream(is);
             bomb = AnimationUtils.cropBitmapIntoRectMatrix(context, original,
                     5, 2, 400, 400);
+
+            is = manager.open("images/blue_explosion.png");
+            original = BitmapFactory.decodeStream(is);
+            blueExplosion = AnimationUtils.cropBitmapIntoRectMatrix(context,
+                    original, 3, 4, 160, 160);
 
             is = manager.open("images/lives_icon.png");
             original = BitmapFactory.decodeStream(is);

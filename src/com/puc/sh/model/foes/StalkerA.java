@@ -107,7 +107,7 @@ public class StalkerA extends Foe {
                 vY /= factor;
 
                 mBullet.initializeLinearBullet(
-                        mContext.getAssets().greenBullet, false, (int) vX,
+                        mContext.getAssets().redBullet12, false, (int) vX,
                         (int) vY, mPosition.x + mBitmap.getWidth() / 2,
                         mPosition.y + mBitmap.getHeight() / 2, 6000, 12, 1);
                 mContext.getState().mEnemyBullets.addBullet(mBullet);

@@ -5,6 +5,7 @@ import android.content.Context;
 import com.puc.sh.model.Animation;
 import com.puc.sh.model.Player;
 import com.puc.sh.model.Player.PlayerState;
+import com.puc.sh.model.Powerup;
 import com.puc.sh.model.bullets.Bullet;
 import com.puc.sh.model.foes.Foe;
 import com.puc.sh.model.stages.Stage;
@@ -13,6 +14,8 @@ import com.puc.soa.utils.CircularArray;
 import com.puc.soa.utils.Utils;
 
 public class GameState {
+    private static final int POWERUP_INTERVAL = 20000;
+
     private AuroraContext mContext;
     private AssetsHolder mAssets;
 
@@ -20,11 +23,13 @@ public class GameState {
 
     public BulletArray mEnemyBullets;
     public BulletArray mPlayerBullets;
+    public CircularArray mSpecialBullets;
 
     public long mScore;
 
     public CircularArray mEnemies;
     public CircularArray mAnimations;
+    public CircularArray mPowerups;
 
     public Bullet mBullet;
 
@@ -33,6 +38,9 @@ public class GameState {
     public boolean mBombActivated;
 
     private long mTimeOfLastBomb;
+    private long mTimeForNextPowerup;
+    public long mTimeWhenBossWasDefeated;
+
     private long mTicks;
 
     public GameState(Context context, AssetsHolder assets) {
@@ -42,26 +50,39 @@ public class GameState {
 
         mEnemyBullets = new BulletArray(mContext, Globals.BULLET_LIMIT);
         mPlayerBullets = new BulletArray(mContext, 200);
+        mSpecialBullets = new CircularArray(100);
 
         mShip = new Player(mContext);
 
         mEnemies = new CircularArray(Globals.ENEMY_LIMIT);
         mAnimations = new CircularArray(Globals.ANIMATIONS_LIMIT);
+        mPowerups = new CircularArray(10);
 
         mBullet = new Bullet(mContext);
+
+        reset();
     }
 
     public void reset() {
         mEnemyBullets.emptyArray();
         mPlayerBullets.emptyArray();
+        mSpecialBullets.emptyArray();
         mAnimations.emptyArray();
         mEnemies.emptyArray();
+        mPowerups.emptyArray();
+
         mTicks = 0;
         mTimeOfLastBomb = 0;
+        mTimeForNextPowerup = POWERUP_INTERVAL;
         mScore = 0;
         mBombActivated = false;
+        mTimeWhenBossWasDefeated = 0;
 
         mShip.reset();
+    }
+
+    public void bossDefeated() {
+        mTimeWhenBossWasDefeated = mTicks;
     }
 
     public Stage getCurrentStage() {
@@ -78,6 +99,16 @@ public class GameState {
 
     public void update(long interval) {
         mTicks += interval;
+
+        mTimeForNextPowerup -= interval;
+        if (mTimeForNextPowerup < 0 && !mCurrentStage.hasBossAppeared()) {
+            Powerup powerup = new Powerup(mContext,
+                    50 + Utils.sRandom.nextInt(Globals.CANVAS_WIDTH - 100));
+            mPowerups.add(powerup);
+
+            mTimeForNextPowerup = POWERUP_INTERVAL;
+        }
+
         if (mBombActivated) {
             animateBomb();
             animateBomb();
@@ -100,13 +131,22 @@ public class GameState {
             mPlayerBullets.getBullet(i).update(interval);
         }
 
+        for (int i = 0; i < mSpecialBullets.size(); i++) {
+            mSpecialBullets.get(i).update(interval);
+        }
+
         for (int i = 0; i < mAnimations.size(); i++) {
             mAnimations.get(i).update(interval);
+        }
+
+        for (int i = 0; i < mPowerups.size(); i++) {
+            mPowerups.get(i).update(interval);
         }
 
         mEnemies.clean();
         mEnemyBullets.clean();
         mPlayerBullets.clean();
+        mSpecialBullets.clean();
         mAnimations.clean();
     }
 
@@ -120,6 +160,7 @@ public class GameState {
 
     public void detonateBomb() {
         mEnemyBullets.emptyArray();
+        mSpecialBullets.emptyArray();
         for (int i = 0; i < mEnemies.size(); i++) {
             ((Foe) mEnemies.get(i)).bomb();
         }

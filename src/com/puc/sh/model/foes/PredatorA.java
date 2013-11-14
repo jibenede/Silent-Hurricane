@@ -51,7 +51,7 @@ public class PredatorA extends Foe {
                 float vY = (float) (Math.sin(angle) * BULLET_SPEED);
 
                 mBullet.initializeLinearBullet(
-                        mContext.getAssets().greenBullet, false, (int) vX,
+                        mContext.getAssets().blueBullet12, false, (int) vX,
                         (int) vY, mPosition.x + mBitmap.getWidth() / 2,
                         mPosition.y + mBitmap.getHeight(), 6000, 12, 1);
 

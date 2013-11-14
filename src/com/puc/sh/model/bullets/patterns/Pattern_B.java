@@ -18,7 +18,7 @@ public class Pattern_B extends BulletPattern {
             for (int i = 0; i < 40; i++) {
                 double angle = 2 * Math.PI * (i / 40f);
 
-                mBullet.initializeLinearBullet(mContext.getAssets().greenBullet,
+                mBullet.initializeLinearBullet(mContext.getAssets().greenBullet12,
                         false, (int) (Math.cos(angle) * 200),
                         (int) (Math.sin(angle) * 200), mFoe.mPosition.x
                                 + mFoe.mBitmap.getWidth() / 2, mFoe.mPosition.y

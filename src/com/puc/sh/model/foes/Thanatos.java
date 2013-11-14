@@ -124,7 +124,7 @@ public class Thanatos extends Foe {
                 double vX = BULLET_SPEED * Math.cos(a);
                 double vY = BULLET_SPEED * Math.sin(a);
 
-                mBullet.initializeLinearBullet(mContext.getAssets().redBullet,
+                mBullet.initializeLinearBullet(mContext.getAssets().redBullet36,
                         false, (int) vX, (int) vY,
                         mPosition.x + mBitmap.getWidth() / 2, mPosition.y
                                 + mBitmap.getHeight() / 2, 6000, 36, 1);

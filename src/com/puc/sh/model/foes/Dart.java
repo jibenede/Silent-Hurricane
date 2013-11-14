@@ -76,7 +76,7 @@ public class Dart extends Foe {
                     float vY = (float) (Math.sin(angle) * 150);
 
                     mBullet.initializeLinearBullet(
-                            mContext.getAssets().fireball, false, (int) vX,
+                            mContext.getAssets().yellowBullet24, false, (int) vX,
                             (int) vY,
                             mPosition.x + mBitmap.getWidth() / 2 - 12,
                             mPosition.y + mBitmap.getHeight(), 6000, 24, 1);

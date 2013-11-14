@@ -5,6 +5,7 @@ import android.graphics.PointF;
 import android.util.TypedValue;
 
 import com.puc.sh.model.bullets.Bullet;
+import com.puc.sh.model.bullets.BulletEmitter;
 import com.puc.sh.model.bullets.CollisionUtils;
 import com.puc.soa.AssetsHolder;
 import com.puc.soa.AuroraContext;
@@ -14,6 +15,10 @@ import com.puc.soa.Globals;
 public class Player {
     public enum PlayerState {
         ALIVE, DEAD, REVIVING, DEFEATED
+    }
+
+    public enum WeaponType {
+        WideSpread, Heavy, Support, None
     }
 
     public static final int BULLET_INTERVAL = 80;
@@ -39,8 +44,11 @@ public class Player {
     private Bullet b;
 
     private long mTimeOfLastRebirth;
+    private long mPowerupDuration;
     private long mTimeOfLastDeath;
     private long mTicks;
+
+    private WeaponType mPowerup;
 
     private AssetsHolder mAssets;
     private GameState mState;
@@ -62,6 +70,7 @@ public class Player {
         mStartY = Globals.CANVAS_HEIGHT - mBitmap.getHeight() - 50;
         mShipPosition = new PointF(mStartX, mStartY);
         shipDestination = new PointF(-1, -1);
+        mPowerupDuration = 0;
 
         mLives = Globals.DEFAULT_LIVES;
         mBombs = Globals.DEFAULT_BOMBS;
@@ -69,6 +78,7 @@ public class Player {
         this.timeSinceLastBullet = 0;
 
         mStatus = PlayerState.ALIVE;
+        mPowerup = WeaponType.None;
     }
 
     public boolean shouldDraw() {
@@ -88,6 +98,15 @@ public class Player {
 
         if (mStatus == PlayerState.ALIVE || mStatus == PlayerState.REVIVING) {
             this.updateShipPosition(interval);
+
+            if (mPowerupDuration > 0) {
+                mPowerupDuration -= interval;
+                if (mPowerupDuration <= 0) {
+                    mPowerup = WeaponType.None;
+                }
+            }
+
+            testPowerup();
 
             timeSinceLastBullet += interval;
             if (timeSinceLastBullet > BULLET_INTERVAL) {
@@ -116,6 +135,9 @@ public class Player {
     }
 
     private void die() {
+        mPowerup = WeaponType.None;
+        mPowerupDuration = 0;
+
         mStatus = PlayerState.DEAD;
         mLives--;
         if (mLives <= 0) {
@@ -136,17 +158,26 @@ public class Player {
     private void fireBullets() {
         float x = mShipPosition.x + mBitmap.getWidth() / 2 - 16;
 
-        b.initializeLinearBullet(mAssets.plasma, true, -50, -BULLET_SPEED, x,
-                mShipPosition.y, 2000, 32, 1);
-        mState.mPlayerBullets.addBullet(b);
-
-        b.initializeLinearBullet(mAssets.plasma, true, 0, -BULLET_SPEED, x,
-                mShipPosition.y, 2000, 32, 1);
-        mState.mPlayerBullets.addBullet(b);
-
-        b.initializeLinearBullet(mAssets.plasma, true, 50, -BULLET_SPEED, x,
-                mShipPosition.y, 2000, 32, 1);
-        mState.mPlayerBullets.addBullet(b);
+        if (mPowerup == WeaponType.None) {
+            for (int i = -50; i <= 50; i += 50) {
+                b.initializeLinearBullet(mAssets.plasma, true, i,
+                        -BULLET_SPEED, x, mShipPosition.y, 2000, 32, 1);
+                mState.mPlayerBullets.addBullet(b);
+            }
+        } else if (mPowerup == WeaponType.WideSpread) {
+            for (int i = -400; i <= 400; i += 100) {
+                b.initializeLinearBullet(mAssets.plasma, true, i,
+                        -BULLET_SPEED, x, mShipPosition.y, 2000, 24, 1);
+                mState.mPlayerBullets.addBullet(b);
+            }
+        } else if (mPowerup == WeaponType.Heavy) {
+            for (int i = -60; i <= 60; i += 30) {
+                b.initializeLinearBullet(mAssets.heavy, true, 0, -BULLET_SPEED,
+                        mShipPosition.x + mBitmap.getWidth() / 2 - 12 + i,
+                        mShipPosition.y, 2000, 24, 3);
+                mState.mPlayerBullets.addBullet(b);
+            }
+        }
     }
 
     public void setDestination(int x, int y) {
@@ -187,12 +218,42 @@ public class Player {
         }
     }
 
+    private void testPowerup() {
+        for (int i = 0; i < mState.mPowerups.size(); i++) {
+            Powerup p = (Powerup) mState.mPowerups.get(i);
+            if (p.isOnScreen()
+                    && CollisionUtils.rectCollide(mShipPosition.y,
+                            mShipPosition.x + mBitmap.getWidth(),
+                            mShipPosition.y + mBitmap.getHeight(),
+                            mShipPosition.x, p.mPosition.y, p.mPosition.x
+                                    + p.mBitmap.getWidth(), p.mPosition.y
+                                    + p.mBitmap.getHeight(), p.mPosition.x)) {
+                p.consume();
+
+                if (p.mType == Powerup.PowerupType.WideSpread) {
+                    mPowerup = WeaponType.WideSpread;
+                } else if (p.mType == Powerup.PowerupType.Heavy) {
+                    mPowerup = WeaponType.Heavy;
+                }
+                mPowerupDuration = 5000;
+            }
+        }
+    }
+
     private boolean hitTest() {
         Bullet b;
         for (int i = 0; i < mState.mEnemyBullets.size(); i++) {
             b = mState.mEnemyBullets.getBullet(i);
 
             if (b.mDisplay && CollisionUtils.playerBulletCollide(this, b)) {
+                return true;
+            }
+        }
+
+        for (int i = 0; i < mState.mSpecialBullets.size(); i++) {
+            BulletEmitter s = (BulletEmitter) mState.mSpecialBullets.get(i);
+
+            if (s.isOnScreen() && CollisionUtils.playerBulletCollide(this, s)) {
                 return true;
             }
         }

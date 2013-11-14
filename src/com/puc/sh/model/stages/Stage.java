@@ -27,6 +27,7 @@ public abstract class Stage {
 
     protected long mTimeUntilBossAudio;
     protected boolean mStageAudioStopped;
+    private boolean mAudioLock;
 
     public Foe mBoss;
 
@@ -69,7 +70,7 @@ public abstract class Stage {
         if (mTimeUntilBossAudio >= 0 && mBossAppeared) {
             mTimeUntilBossAudio -= interval;
 
-            if (!mStageAudioStopped) {
+            if (!mStageAudioStopped && !mAudioLock) {
                 mRenderer.setVolume((mTimeUntilBossAudio - 1000) / 2000.0f);
 
                 if (mTimeUntilBossAudio < 1000) {
@@ -83,6 +84,14 @@ public abstract class Stage {
             }
         }
 
+    }
+
+    public void unlockAudio() {
+        mAudioLock = false;
+    }
+
+    public void lockAudio() {
+        mAudioLock = true;
     }
 
     public boolean hasBossAppeared() {
