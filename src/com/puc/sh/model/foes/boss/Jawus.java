@@ -11,6 +11,7 @@ import com.puc.sh.model.bullets.patterns.Pattern_G;
 import com.puc.sh.model.bullets.patterns.Pattern_H;
 import com.puc.sh.model.bullets.patterns.Pattern_I;
 import com.puc.sh.model.bullets.patterns.Pattern_J;
+import com.puc.sh.model.bullets.patterns.Pattern_N;
 import com.puc.sh.model.foes.Foe;
 import com.puc.soa.AuroraContext;
 import com.puc.soa.Globals;
@@ -42,7 +43,7 @@ public class Jawus extends Foe {
         mBulletPatterns = new BulletPattern[] { new Pattern_E(this, context),
                 new Pattern_F(this, context), new Pattern_G(this, context),
                 new Pattern_H(this, context), new Pattern_I(this, context),
-                new Pattern_J(this, context) };
+                new Pattern_J(this, context), new Pattern_N(this, context) };
         mCurrentPattern = 0;
 
         mStartingHp = hp;
@@ -115,12 +116,17 @@ public class Jawus extends Foe {
             // mMovementPhase = MovementPattern.RESET;
 
             mTimeOfLastPatternChange = mTicks;
-        } else if (mCurrentPattern == 3 && mHp < (40.0 / 100) * mStartingHp) {
+        } else if (mCurrentPattern == 3 && mHp < (45.0 / 100) * mStartingHp) {
             mCurrentPattern++;
             // mMovementPhase = MovementPattern.RESET;
 
             mTimeOfLastPatternChange = mTicks;
-        } else if (mCurrentPattern == 4 && mHp < (25.0 / 100) * mStartingHp) {
+        } else if (mCurrentPattern == 4 && mHp < (30.0 / 100) * mStartingHp) {
+            mCurrentPattern++;
+            // mMovementPhase = MovementPattern.RESET;
+
+            mTimeOfLastPatternChange = mTicks;
+        } else if (mCurrentPattern == 5 && mHp < (15.0 / 100) * mStartingHp) {
             mCurrentPattern++;
             // mMovementPhase = MovementPattern.RESET;
 

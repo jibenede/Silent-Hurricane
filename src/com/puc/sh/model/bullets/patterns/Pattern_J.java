@@ -36,7 +36,8 @@ public class Pattern_J extends BulletPattern {
                     mBullet.initializeCurvedBullet(
                             mContext.getAssets().yellowBullet24, vX, vY, -20
                                     + Utils.sRandom.nextInt(40), -150,
-                            Utils.sRandom.nextInt(Globals.CANVAS_WIDTH), 0, 24);
+                            Utils.sRandom.nextInt(Globals.CANVAS_WIDTH), 0, 24,
+                            1000);
                     mContext.getState().mEnemyBullets.addBullet(mBullet);
                 }
             } else if (mOrigin % 3 == 1) {
@@ -51,7 +52,7 @@ public class Pattern_J extends BulletPattern {
                             mContext.getAssets().yellowBullet24, vX, vY, -220,
                             -40, 0,
                             Globals.CANVAS_HEIGHT - Utils.sRandom.nextInt(300),
-                            24);
+                            24, 1000);
                     mContext.getState().mEnemyBullets.addBullet(mBullet);
                 }
             } else {
@@ -66,7 +67,7 @@ public class Pattern_J extends BulletPattern {
                             mContext.getAssets().yellowBullet24, vX, vY, 220,
                             -40, Globals.CANVAS_WIDTH - 5,
                             Globals.CANVAS_HEIGHT - Utils.sRandom.nextInt(300),
-                            24);
+                            24, 1000);
                     mContext.getState().mEnemyBullets.addBullet(mBullet);
                 }
             }
@@ -90,8 +91,9 @@ public class Pattern_J extends BulletPattern {
                     angle += Math.PI / 20;
                 }
 
-                mBullet.initializeLinearBullet(mContext.getAssets().redBullet36,
-                        false, (int) (Math.cos(angle) * 300),
+                mBullet.initializeLinearBullet(
+                        mContext.getAssets().redBullet36, false,
+                        (int) (Math.cos(angle) * 300),
                         (int) (Math.sin(angle) * 300), mFoe.mPosition.x
                                 + mFoe.mBitmap.getWidth() / 2, mFoe.mPosition.y
                                 + mFoe.mBitmap.getHeight(), 6000, 36, 1);

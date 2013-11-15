@@ -113,7 +113,7 @@ public class Bullet {
 
     public void initializeCurvedBullet(Bitmap bitmap, float speedX,
             float speedY, float accelX, float accelY, float positionX,
-            float positionY, float size) {
+            float positionY, float size, int lifetime) {
         mType = BulletType.Curve;
         mShape = BulletShape.Round;
 
@@ -125,6 +125,7 @@ public class Bullet {
         mPosition.y = positionY;
         mDisplay = true;
         mFirepower = 1;
+        mLifetime = lifetime;
 
         mSize = mSize2 = size;
 
@@ -195,6 +196,13 @@ public class Bullet {
                 if (mLifetime < 0) {
                     mDisplay = false;
                 }
+            } else if (mType == BulletType.Curve) {
+                if (mLifetime < 0
+                        && (mPosition.x < -mSize
+                                || mPosition.x > Globals.CANVAS_WIDTH
+                                || mPosition.y < -mSize || mPosition.y > Globals.CANVAS_HEIGHT)) {
+                    mDisplay = false;
+                }
             } else {
                 if (mPosition.x < -mSize || mPosition.x > Globals.CANVAS_WIDTH
                         || mPosition.y < -mSize
@@ -207,6 +215,7 @@ public class Bullet {
                 mPosition.x += mSpeedX * interval / 1000;
                 mPosition.y += mSpeedY * interval / 1000;
             } else if (mType == BulletType.Curve) {
+                mLifetime -= interval;
                 mPosition.x += mSpeedX * interval / 1000;
                 mPosition.y += mSpeedY * interval / 1000;
 
