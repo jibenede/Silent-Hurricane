@@ -84,7 +84,7 @@ public class Mawler extends Foe {
                     double vY = (1 + j * 0.2) * BULLET_SPEED * Math.sin(a);
 
                     mBullet.initializeLinearBullet(
-                            mContext.getAssets().fireball, false, (int) vX,
+                            mContext.getAssets().yellowBullet24, false, (int) vX,
                             (int) vY, mPosition.x + mBitmap.getWidth() / 2,
                             mPosition.y + mBitmap.getHeight() / 2, 6000, 24, 1);
                     mContext.getState().mEnemyBullets.addBullet(mBullet);

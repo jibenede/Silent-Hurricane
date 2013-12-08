@@ -88,7 +88,7 @@ public class Apollo extends Foe {
                     float vY = (float) (Math.sin(angle) * 300);
 
                     Bullet b = mContext.getState().mBullet;
-                    b.initializeLinearBullet(mContext.getAssets().fireball,
+                    b.initializeLinearBullet(mContext.getAssets().yellowBullet24,
                             false, (int) vX, (int) vY, posX, posY, 0, 24, 1);
                     mContext.getState().mEnemyBullets.addBullet(b);
                 }
@@ -109,7 +109,7 @@ public class Apollo extends Foe {
                     vY /= factor;
 
                     mBullet.initializeLinearBullet(
-                            mContext.getAssets().blueBullet, false, (int) vX,
+                            mContext.getAssets().blueBullet96, false, (int) vX,
                             (int) vY,
                             mPosition.x + mBitmap.getWidth() / 2 - 48,
                             mPosition.y + mBitmap.getHeight() / 2 - 48, 6000,
@@ -130,7 +130,7 @@ public class Apollo extends Foe {
                     float vY = (float) (Math.sin(angle) * 300);
 
                     Bullet b = mContext.getState().mBullet;
-                    b.initializeLinearBullet(mContext.getAssets().redBullet,
+                    b.initializeLinearBullet(mContext.getAssets().redBullet36,
                             false, (int) vX, (int) vY,
                             mPosition.x + mBitmap.getWidth() / 2 - 18,
                             mPosition.y + mBitmap.getHeight() / 2 - 18, 0, 36,

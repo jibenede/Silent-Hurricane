@@ -25,7 +25,7 @@ public class Pattern_A extends BulletPattern {
                     float vY = (float) (Math.sin(angle) * (350 + 4 * j));
 
                     mBullet.initializeLinearBullet(
-                            mContext.getAssets().fireball, false, vX, vY,
+                            mContext.getAssets().yellowBullet24, false, vX, vY,
                             mFoe.mPosition.x + mFoe.mBitmap.getWidth() / 2,
                             mFoe.mPosition.y + mFoe.mBitmap.getHeight() / 2
                                     + (j * 3), 3000, 24, 1);
@@ -41,7 +41,7 @@ public class Pattern_A extends BulletPattern {
                     float vY = (float) (Math.sin(angle) * (350 + 4 * j));
 
                     mBullet.initializeLinearBullet(
-                            mContext.getAssets().fireball, false, vX, vY,
+                            mContext.getAssets().yellowBullet24, false, vX, vY,
                             mFoe.mPosition.x + mFoe.mBitmap.getWidth() / 2,
                             mFoe.mPosition.y + mFoe.mBitmap.getHeight() / 2
                                     + (j * 6), 3000, 24, 1);

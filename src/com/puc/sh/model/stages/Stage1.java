@@ -3,11 +3,11 @@ package com.puc.sh.model.stages;
 import android.graphics.Bitmap;
 
 import com.puc.sh.model.Audio;
-import com.puc.sh.model.foes.BossA;
 import com.puc.sh.model.foes.Dart;
 import com.puc.sh.model.foes.PredatorA;
 import com.puc.sh.model.foes.StalkerA;
 import com.puc.sh.model.foes.Stingray;
+import com.puc.sh.model.foes.boss.BossA;
 import com.puc.soa.AuroraContext;
 import com.puc.soa.Globals;
 import com.puc.soa.RenderView;
@@ -71,7 +71,7 @@ public class Stage1 extends Stage {
             addFoeAtTime(foe3, 50000 + 2000 * i);
         }
 
-        BossA boss = new BossA(context, 1000);
+        BossA boss = new BossA(context, 2200);
         addFoeAtTime(boss, 74000);
 
         prepare();
@@ -84,7 +84,7 @@ public class Stage1 extends Stage {
 
     @Override
     public Audio getBossTheme() {
-        return mContext.getAssets().music;
+        return mContext.getAssets().boss1_theme;
     }
 
     @Override

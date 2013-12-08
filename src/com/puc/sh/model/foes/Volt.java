@@ -98,7 +98,7 @@ public class Volt extends Foe {
                 double vX = BULLET_SPEED * Math.cos(a);
                 double vY = BULLET_SPEED * Math.sin(a);
 
-                mBullet.initializeLinearBullet(mContext.getAssets().fireball,
+                mBullet.initializeLinearBullet(mContext.getAssets().yellowBullet24,
                         false, (int) vX, (int) vY,
                         mPosition.x + mBitmap.getWidth() / 2, mPosition.y
                                 + mBitmap.getHeight() / 2, 6000, 24, 1);

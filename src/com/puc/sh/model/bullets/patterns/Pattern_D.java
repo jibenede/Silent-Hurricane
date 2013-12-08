@@ -27,7 +27,7 @@ public class Pattern_D extends BulletPattern {
         mTimeUntilNextShot -= interval;
 
         if (mTimeUntilNextBurst < 0) {
-            Bitmap bmp = mContext.getAssets().redBullet;
+            Bitmap bmp = mContext.getAssets().redBullet36;
             for (int i = 0; i < 4; i++) {
                 float angle = 2 * (float) Math.PI * (i / 4f);
                 int mult = mCounter % 8;
@@ -53,7 +53,7 @@ public class Pattern_D extends BulletPattern {
             int random = Utils.sRandom.nextInt(100);
             float angle = (float) (Math.PI / 2 + (random / 100f)
                     * (Math.PI / 4));
-            mBullet.initializeLinearBullet(mContext.getAssets().greenBullet,
+            mBullet.initializeLinearBullet(mContext.getAssets().greenBullet12,
                     false, (float) (Math.cos(angle) * SHOT_SPEED),
                     (float) (Math.sin(angle) * SHOT_SPEED),
                     Globals.CANVAS_WIDTH - 10, -10, 0, 12, 1);
@@ -61,14 +61,14 @@ public class Pattern_D extends BulletPattern {
 
             random = Utils.sRandom.nextInt(100);
             angle = (float) (Math.PI / 2 - (random / 100f) * (Math.PI / 4));
-            mBullet.initializeLinearBullet(mContext.getAssets().greenBullet,
+            mBullet.initializeLinearBullet(mContext.getAssets().greenBullet12,
                     false, (float) (Math.cos(angle) * SHOT_SPEED),
                     (float) (Math.sin(angle) * SHOT_SPEED), -10, -10, 0, 12, 1);
             mContext.getState().mEnemyBullets.addBullet(mBullet);
 
             random = Utils.sRandom.nextInt(100);
             angle = (float) (Math.PI / 2 + (random / 100f) * (2 * Math.PI / 3));
-            mBullet.initializeLinearBullet(mContext.getAssets().greenBullet,
+            mBullet.initializeLinearBullet(mContext.getAssets().greenBullet12,
                     false, (float) (Math.cos(angle) * SHOT_SPEED),
                     (float) (Math.sin(angle) * SHOT_SPEED),
                     Globals.CANVAS_WIDTH - 10, Globals.CANVAS_HEIGHT - 250, 0,
@@ -77,7 +77,7 @@ public class Pattern_D extends BulletPattern {
 
             random = Utils.sRandom.nextInt(100);
             angle = (float) (Math.PI / 2 - (random / 100f) * (2 * Math.PI / 3));
-            mBullet.initializeLinearBullet(mContext.getAssets().greenBullet,
+            mBullet.initializeLinearBullet(mContext.getAssets().greenBullet12,
                     false, (float) (Math.cos(angle) * SHOT_SPEED),
                     (float) (Math.sin(angle) * SHOT_SPEED), -10,
                     Globals.CANVAS_HEIGHT - 250, 0, 12, 1);

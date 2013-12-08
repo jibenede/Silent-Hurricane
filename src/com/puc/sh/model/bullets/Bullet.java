@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.graphics.PointF;
 
 import com.puc.soa.AuroraContext;
+import com.puc.soa.Globals;
+import com.puc.soa.utils.Utils;
 
 public class Bullet {
     public enum BulletShape {
@@ -11,13 +13,16 @@ public class Bullet {
     }
 
     public enum BulletType {
-        Linear, Cluster, Curve, TwoStep, Radial
+        Linear, Cluster, Curve, TwoStep, Radial, Sticky
     };
 
     private AuroraContext mContext;
 
     private float mSpeedX;
     private float mSpeedY;
+    private float mAccelX;
+    private float mAccelY;
+
     private long mLifetime;
     public BulletType mType;
     public BulletShape mShape;
@@ -45,13 +50,11 @@ public class Bullet {
         mContext = context;
     }
 
-    public void initializeBullet(Bullet b/*
-                                          * boolean benign, float speedX, float
-                                          * speedY, PointF position, long
-                                          * lifetime, BulletType type
-                                          */) {
+    public void initializeBullet(Bullet b) {
         mSpeedX = b.mSpeedX;
         mSpeedY = b.mSpeedY;
+        mAccelX = b.mAccelX;
+        mAccelY = b.mAccelY;
         mPosition.x = b.mPosition.x;
         mPosition.y = b.mPosition.y;
         mLifetime = b.mLifetime;
@@ -108,6 +111,27 @@ public class Bullet {
         mBitmap = bitmap;
     }
 
+    public void initializeCurvedBullet(Bitmap bitmap, float speedX,
+            float speedY, float accelX, float accelY, float positionX,
+            float positionY, float size, int lifetime) {
+        mType = BulletType.Curve;
+        mShape = BulletShape.Round;
+
+        mSpeedX = speedX;
+        mSpeedY = speedY;
+        mAccelX = accelX;
+        mAccelY = accelY;
+        mPosition.x = positionX;
+        mPosition.y = positionY;
+        mDisplay = true;
+        mFirepower = 1;
+        mLifetime = lifetime;
+
+        mSize = mSize2 = size;
+
+        mBitmap = bitmap;
+    }
+
     public void initializeRadialBullet(Bitmap bitmap, float speedR,
             float speedAngle, float positionX, float positionY,
             float startRadius, float startAngle, float size, int firepower,
@@ -150,15 +174,39 @@ public class Bullet {
         mBitmap = bitmap;
     }
 
+    public void initializeStickyBullet(Bitmap bitmap, float positionX,
+            float positionY, long lifetime, float size) {
+        mType = BulletType.Sticky;
+        mShape = BulletShape.Round;
+
+        mPosition.x = positionX;
+        mPosition.y = positionY;
+        mLifetime = lifetime;
+        mDisplay = true;
+        mFirepower = 1;
+
+        mSize = mSize2 = size;
+
+        mBitmap = bitmap;
+    }
+
     public void update(long interval) {
         if (mDisplay) {
             if (mType == BulletType.Radial) {
                 if (mLifetime < 0) {
                     mDisplay = false;
                 }
+            } else if (mType == BulletType.Curve) {
+                if (mLifetime < 0
+                        && (mPosition.x < -mSize
+                                || mPosition.x > Globals.CANVAS_WIDTH
+                                || mPosition.y < -mSize || mPosition.y > Globals.CANVAS_HEIGHT)) {
+                    mDisplay = false;
+                }
             } else {
-                if (mPosition.x < -mSize || mPosition.x > 720
-                        || mPosition.y < -mSize || mPosition.y > 1280) {
+                if (mPosition.x < -mSize || mPosition.x > Globals.CANVAS_WIDTH
+                        || mPosition.y < -mSize
+                        || mPosition.y > Globals.CANVAS_HEIGHT) {
                     mDisplay = false;
                 }
             }
@@ -166,6 +214,13 @@ public class Bullet {
             if (mType == BulletType.Linear) {
                 mPosition.x += mSpeedX * interval / 1000;
                 mPosition.y += mSpeedY * interval / 1000;
+            } else if (mType == BulletType.Curve) {
+                mLifetime -= interval;
+                mPosition.x += mSpeedX * interval / 1000;
+                mPosition.y += mSpeedY * interval / 1000;
+
+                mSpeedX += mAccelX * interval / 1000;
+                mSpeedY += mAccelY * interval / 1000;
             } else if (mType == BulletType.Cluster) {
                 mLifetime -= interval;
                 if (mLifetime < 0) {
@@ -183,9 +238,31 @@ public class Bullet {
                 mPosition.x = mOriginX + (float) (mRadius * Math.cos(mAngle));
                 mPosition.y = mOriginY + (float) (mRadius * Math.sin(mAngle));
 
+            } else if (mType == BulletType.Sticky) {
+                mLifetime -= interval;
+                if (mLifetime < 0) {
+                    mDisplay = false;
+                    stickyDetonate();
+                }
             }
 
         }
+    }
+
+    private void stickyDetonate() {
+        for (int i = 0; i < 2; i++) {
+            float angle = (float) (2 * Math.PI * Utils.sRandom.nextDouble());
+
+            float vX = (float) (Math.cos(angle) * 70);
+            float vY = (float) (Math.sin(angle) * 70);
+
+            Bullet b = mContext.getState().mBullet;
+            b.initializeLinearBullet(mContext.getAssets().greenBullet12, false,
+                    (int) vX, (int) vY, mPosition.x + mBitmap.getWidth() / 2,
+                    mPosition.y + mBitmap.getHeight(), 6000, 12, 1);
+            mContext.getState().mEnemyBullets.addBullet(b);
+        }
+
     }
 
     private void fireCluster() {
@@ -196,7 +273,7 @@ public class Bullet {
             float vY = (float) (Math.sin(angle) * 300);
 
             Bullet b = mContext.getState().mBullet;
-            b.initializeLinearBullet(mContext.getAssets().greenBullet, false,
+            b.initializeLinearBullet(mContext.getAssets().redBullet12, false,
                     (int) vX, (int) vY, mPosition.x + mBitmap.getWidth() / 2,
                     mPosition.y + mBitmap.getHeight(), 6000, 12, 1);
             mContext.getState().mEnemyBullets.addBullet(b);

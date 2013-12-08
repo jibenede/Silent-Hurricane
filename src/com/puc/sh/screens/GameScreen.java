@@ -18,9 +18,11 @@ import android.view.MotionEvent;
 import com.puc.sh.model.Animation;
 import com.puc.sh.model.Audio;
 import com.puc.sh.model.Player.PlayerState;
+import com.puc.sh.model.Powerup;
 import com.puc.sh.model.Widget;
 import com.puc.sh.model.Widget.OnTouchListener;
 import com.puc.sh.model.bullets.Bullet;
+import com.puc.sh.model.bullets.BulletEmitter;
 import com.puc.sh.model.foes.Foe;
 import com.puc.sh.model.stages.Stage;
 import com.puc.soa.AssetsHolder;
@@ -113,7 +115,7 @@ public class GameScreen extends Screen implements SensorEventListener {
         mRenderer.transitionTo(screen);
     }
 
-    private void enablePause() {
+    public void enablePause() {
         mGameplayState = GameplayState.PAUSED;
         Widget resume = new Widget(mContext.getAssets().buttonResume, 50, 600);
         resume.setListener(new OnTouchListener() {
@@ -134,18 +136,31 @@ public class GameScreen extends Screen implements SensorEventListener {
         mWidgets.add(exit);
     }
 
+    private void enableVictory() {
+        mGameplayState = GameplayState.VICTORY;
+
+        Widget exit = new Widget(mContext.getAssets().buttonExit, 50, 600);
+        exit.setListener(new OnTouchListener() {
+            public void onTouchEvent(MotionEvent event) {
+                exit();
+            }
+        });
+
+        Widget nextStage = new Widget(mContext.getAssets().buttonNextStage,
+                380, 600);
+        nextStage.setListener(new OnTouchListener() {
+            public void onTouchEvent(MotionEvent event) {
+
+            }
+        });
+
+        mWidgets.clear();
+        mWidgets.add(exit);
+        mWidgets.add(nextStage);
+    }
+
     private void drawCanvas() {
         mCanvas.drawBitmap(mStage.getBackground(), mSourceRect, mDestRect, null);
-
-        // mPaint.setColor(Color.BLACK);
-        // mPaint.setTextSize(24);
-        // mPaint.setTypeface(Typeface.DEFAULT_BOLD);
-        // mCanvas.drawText("BOSS", 20, 20, mPaint);
-        //
-        // mPaint.setColor(Color.rgb(255, 210, 0));
-        // mPaint.setStrokeWidth(10);
-        // float w = (mSize.x - 40) * mState.getBossHpRatio();
-        // mCanvas.drawLine(20, 40, 20 + w, 40, mPaint);
 
         if (mState.isPlayerContinuing() && mState.mShip.shouldDraw()) {
             mCanvas.drawBitmap(mState.mShip.mBitmap,
@@ -163,12 +178,12 @@ public class GameScreen extends Screen implements SensorEventListener {
 
         }
 
-        CircularArray animations = mState.mAnimations;
-        for (int i = 0; i < animations.size(); i++) {
-            Animation a = (Animation) animations.get(i);
-            if (a.isOnScreen()) {
-                mCanvas.drawBitmap(a.getFrame(), a.mPosition.x, a.mPosition.y,
-                        null);
+        CircularArray powerups = mState.mPowerups;
+        for (int i = 0; i < powerups.size(); i++) {
+            Powerup powerup = (Powerup) powerups.get(i);
+            if (powerup.isOnScreen()) {
+                mCanvas.drawBitmap(powerup.mBitmap, powerup.mPosition.x,
+                        powerup.mPosition.y, null);
             }
         }
 
@@ -184,6 +199,15 @@ public class GameScreen extends Screen implements SensorEventListener {
                                 + e.mBitmap.getHeight() / 2);
 
                 mCanvas.drawBitmap(e.mBitmap, mMatrix, null);
+            }
+        }
+
+        CircularArray animations = mState.mAnimations;
+        for (int i = 0; i < animations.size(); i++) {
+            Animation a = (Animation) animations.get(i);
+            if (a.isOnScreen()) {
+                mCanvas.drawBitmap(a.getFrame(), a.mPosition.x, a.mPosition.y,
+                        null);
             }
         }
 
@@ -207,10 +231,20 @@ public class GameScreen extends Screen implements SensorEventListener {
                 // mCanvas.drawBitmap(b.mBitmap, mTempRect1, mTempRect2, null);
             }
         }
+
         bullets = mState.mEnemyBullets;
         for (int i = 0; i < bullets.size(); i++) {
             Bullet b = bullets.getBullet(i);
             if (b.mDisplay) {
+                mCanvas.drawBitmap(b.mBitmap, b.mPosition.x, b.mPosition.y,
+                        null);
+            }
+        }
+
+        CircularArray specialBullets = mState.mSpecialBullets;
+        for (int i = 0; i < specialBullets.size(); i++) {
+            BulletEmitter b = (BulletEmitter) specialBullets.get(i);
+            if (b.isOnScreen()) {
                 mCanvas.drawBitmap(b.mBitmap, b.mPosition.x, b.mPosition.y,
                         null);
             }
@@ -230,7 +264,28 @@ public class GameScreen extends Screen implements SensorEventListener {
 
         if (mGameplayState == GameplayState.PAUSED) {
             drawPauseScreen();
+        } else if (mGameplayState == GameplayState.VICTORY) {
+            drawVictoryScreen();
         }
+    }
+
+    private void drawVictoryScreen() {
+        mPaint.setColor(Color.BLACK);
+        mPaint.setAlpha(128);
+
+        mTempRect1.top = 0;
+        mTempRect1.right = Globals.CANVAS_WIDTH;
+        mTempRect1.bottom = Globals.CANVAS_HEIGHT;
+        mTempRect1.left = 0;
+
+        mCanvas.drawRect(mTempRect1, mPaint);
+        for (Widget w : mWidgets) {
+            mCanvas.drawBitmap(w.mBitmap, w.X, w.Y, null);
+        }
+
+        mPaint.setColor(Color.WHITE);
+        mPaint.setTextSize(90);
+        mCanvas.drawText("VICTORY!", 200, 200, mPaint);
     }
 
     private void drawPauseScreen() {
@@ -246,7 +301,6 @@ public class GameScreen extends Screen implements SensorEventListener {
         for (Widget w : mWidgets) {
             mCanvas.drawBitmap(w.mBitmap, w.X, w.Y, null);
         }
-
     }
 
     private void drawBossLifeBar() {
@@ -301,6 +355,11 @@ public class GameScreen extends Screen implements SensorEventListener {
                 mSourceRect.top -= 1;
                 mSourceRect.bottom -= 1;
             }
+
+            if (mState.mTimeWhenBossWasDefeated != 0
+                    && mTicks - mState.mTimeWhenBossWasDefeated > 5000) {
+                enableVictory();
+            }
         }
     }
 
@@ -318,7 +377,7 @@ public class GameScreen extends Screen implements SensorEventListener {
             } else if (event.getAction() == MotionEvent.ACTION_UP) {
                 mState.setDestination(-1, -1);
             }
-        } else {
+        } else if (event.getAction() == MotionEvent.ACTION_UP) {
             for (Widget w : mWidgets) {
                 w.hitTest(event);
             }

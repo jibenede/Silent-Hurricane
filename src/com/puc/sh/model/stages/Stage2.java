@@ -8,6 +8,7 @@ import com.puc.sh.model.foes.Eclipse;
 import com.puc.sh.model.foes.Mawler;
 import com.puc.sh.model.foes.Stingray;
 import com.puc.sh.model.foes.Thanatos;
+import com.puc.sh.model.foes.boss.Jawus;
 import com.puc.soa.AuroraContext;
 import com.puc.soa.Globals;
 import com.puc.soa.RenderView;
@@ -85,17 +86,20 @@ public class Stage2 extends Stage {
             addFoeAtTime(foe4, 64000 + 2000 * i);
         }
 
+        Jawus jawus = new Jawus(context, 5000);
+        addFoeAtTime(jawus, 96000);
+
         prepare();
     }
 
     @Override
     public Audio getStageTheme() {
-        return mContext.getAssets().stage1_audio;
+        return mContext.getAssets().stage2_audio;
     }
 
     @Override
     public Audio getBossTheme() {
-        return mContext.getAssets().music;
+        return mContext.getAssets().boss2_theme;
     }
 
     @Override

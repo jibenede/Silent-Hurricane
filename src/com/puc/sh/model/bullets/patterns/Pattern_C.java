@@ -26,7 +26,7 @@ public class Pattern_C extends BulletPattern {
                     angle += Math.PI / 40;
                 }
 
-                Bitmap bitmap = mContext.getAssets().blueBullet;
+                Bitmap bitmap = mContext.getAssets().blueBullet96;
                 mBullet.initializeLinearBullet(
                         bitmap,
                         false,
