@@ -16,137 +16,133 @@ import com.puc.soa.utils.Utils;
 
 public abstract class Foe implements Renderable {
 
-    protected AuroraContext mContext;
-    public int mHp;
-    public int mOriginalHp;
+	protected AuroraContext mContext;
+	public int mHp;
+	public int mOriginalHp;
 
-    public PointF mPosition;
-    public Bitmap mBitmap;
+	public PointF mPosition;
+	public Bitmap mBitmap;
 
-    protected Bullet mBullet;
-    protected boolean mInvulnerable;
-    protected long mTicks;
-    protected long mTimeForNextExplosion;
+	protected Bullet mBullet;
+	protected boolean mInvulnerable;
+	protected long mTicks;
+	protected long mTimeForNextExplosion;
 
-    public Foe(AuroraContext context, int hp, Bitmap bitmap) {
-        mContext = context;
-        mHp = mOriginalHp = hp;
-        mBullet = new Bullet(context);
-        mBitmap = bitmap;
-    }
+	public Foe(AuroraContext context, int hp, Bitmap bitmap) {
+		mContext = context;
+		mHp = mOriginalHp = hp;
+		mBullet = new Bullet(context);
+		mBitmap = bitmap;
+	}
 
-    public void update(long interval) {
-        mTicks += interval;
-        if (isOnScreen()) {
-            if (mHp > 0) {
-                updatePattern();
-                updatePosition(interval);
-                fireBullets(interval);
-                hitTest();
-            }
+	@Override
+	public void update(long interval) {
+		mTicks += interval;
+		if (isOnScreen()) {
+			if (mHp > 0) {
+				updatePattern();
+				updatePosition(interval);
+				fireBullets(interval);
+				hitTest();
+			}
 
-            if (isBoss() && mHp <= 0) {
-                mTimeForNextExplosion -= interval;
-                if (mTimeForNextExplosion < 0) {
-                    AssetsHolder assets = mContext.getAssets();
+			if (isBoss() && mHp <= 0) {
+				mTimeForNextExplosion -= interval;
+				if (mTimeForNextExplosion < 0) {
+					AssetsHolder assets = mContext.getAssets();
 
-                    double x = -assets.blueExplosion[0].getWidth() / 2
-                            + mPosition.x + Utils.sRandom.nextDouble()
-                            * mBitmap.getWidth();
-                    double y = -assets.blueExplosion[0].getHeight() / 2
-                            + mPosition.y + Utils.sRandom.nextDouble()
-                            * mBitmap.getHeight();
+					double x = -assets.blueExplosion[0].getWidth() / 2 + mPosition.x
+							+ Utils.sRandom.nextDouble() * mBitmap.getWidth();
+					double y = -assets.blueExplosion[0].getHeight() / 2 + mPosition.y
+							+ Utils.sRandom.nextDouble() * mBitmap.getHeight();
 
-                    Animation a = new Animation(mContext, assets.blueExplosion,
-                            50, (int) x, (int) y);
-                    a.prepare();
-                    mContext.getState().mAnimations.add(a);
+					Animation a = new Animation(mContext, assets.blueExplosion, 50, (int) x,
+							(int) y);
+					a.prepare();
+					mContext.getState().mAnimations.add(a);
 
-                    mTimeForNextExplosion = 100;
-                }
+					mTimeForNextExplosion = 100;
+				}
 
-            }
+			}
 
-        }
-    }
+		}
+	}
 
-    public abstract float getAngle();
+	public abstract float getAngle();
 
-    public abstract boolean isOnScreen();
+	@Override
+	public abstract boolean isOnScreen();
 
-    protected abstract void updatePosition(long interval);
+	protected abstract void updatePosition(long interval);
 
-    protected void hitTest() {
-        BulletArray bullets = mContext.getState().mPlayerBullets;
-        Bullet b;
-        for (int i = 0; i < bullets.size(); i++) {
-            b = bullets.getBullet(i);
+	protected void hitTest() {
+		BulletArray bullets = mContext.getState().mPlayerBullets;
+		Bullet b;
+		for (int i = 0; i < bullets.size(); i++) {
+			b = bullets.getBullet(i);
 
-            if (b.mDisplay && collidesWith(b)) {
-                if (!mInvulnerable) {
-                    mHp -= b.mFirepower;
-                    mContext.getState().mScore += b.mFirepower
-                            * mContext.getState().mShip.mLives * 100;
+			if (b.mDisplay && collidesWith(b)) {
+				if (!mInvulnerable) {
+					mHp -= b.mFirepower;
+					mContext.getState().mScore += b.mFirepower * mContext.getState().mShip.mLives
+							* 100;
 
-                }
-                b.mDisplay = false;
-                if (mHp <= 0) {
-                    onDestroyed();
-                    if (holdsStage()) {
-                        mContext.getState().getCurrentStage().unholdTimer();
-                    }
-                    break;
-                }
-            }
-        }
-    }
+				}
+				b.mDisplay = false;
+				if (mHp <= 0) {
+					onDestroyed();
+					if (holdsStage()) {
+						mContext.getState().getCurrentStage().unholdTimer();
+					}
+					break;
+				}
+			}
+		}
+	}
 
-    public boolean collidesWith(Bullet b) {
-        return CollisionUtils.circleCollide(mPosition.x, mPosition.y,
-                mBitmap.getWidth() / 2, b.mPosition.x, b.mPosition.y,
-                b.mSize / 2);
-    }
+	public boolean collidesWith(Bullet b) {
+		return CollisionUtils.circleCollide(mPosition.x, mPosition.y, mBitmap.getWidth() / 2,
+				b.mPosition.x, b.mPosition.y, b.mSize / 2);
+	}
 
-    public abstract void fireBullets(long interval);
+	public abstract void fireBullets(long interval);
 
-    public boolean isBoss() {
-        return false;
-    }
+	public boolean isBoss() {
+		return false;
+	}
 
-    public boolean holdsStage() {
-        return false;
-    }
+	public boolean holdsStage() {
+		return false;
+	}
 
-    protected void onDestroyed() {
-        if (isBoss()) {
-            mContext.getState().bossDefeated();
-        } else {
-            Log.i("Game", "enemy destroyed");
-            AssetsHolder assets = mContext.getAssets();
-            Animation a = new Animation(mContext, assets.death, 15, mPosition.x
-                    + mBitmap.getWidth() / 2 - assets.death[0].getWidth() / 2,
-                    mPosition.y + mBitmap.getHeight() / 2
-                            - assets.death[0].getHeight() / 2);
-            a.prepare();
-            mContext.getState().mAnimations.add(a);
-        }
-    }
+	protected void onDestroyed() {
+		if (isBoss()) {
+			mContext.getState().bossDefeated();
+		} else {
+			Log.i("Game", "enemy destroyed");
+			AssetsHolder assets = mContext.getAssets();
+			Animation a = new Animation(mContext, assets.death, 15, mPosition.x
+					+ mBitmap.getWidth() / 2 - assets.death[0].getWidth() / 2, mPosition.y
+					+ mBitmap.getHeight() / 2 - assets.death[0].getHeight() / 2);
+			a.prepare();
+			mContext.getState().mAnimations.add(a);
+		}
+	}
 
-    public void bomb() {
-        if (mPosition.x >= -mBitmap.getWidth()
-                && mPosition.x <= Globals.CANVAS_WIDTH
-                && mPosition.y >= -mBitmap.getHeight()
-                && mPosition.y <= Globals.CANVAS_HEIGHT) {
-            mHp -= 50;
-            if (mHp <= 0) {
-                onDestroyed();
-                if (holdsStage()) {
-                    mContext.getState().getCurrentStage().unholdTimer();
-                }
-            }
-        }
-    }
+	public void bomb() {
+		if (mPosition.x >= -mBitmap.getWidth() && mPosition.x <= Globals.CANVAS_WIDTH
+				&& mPosition.y >= -mBitmap.getHeight() && mPosition.y <= Globals.CANVAS_HEIGHT) {
+			mHp -= 50;
+			if (mHp <= 0) {
+				onDestroyed();
+				if (holdsStage()) {
+					mContext.getState().getCurrentStage().unholdTimer();
+				}
+			}
+		}
+	}
 
-    protected void updatePattern() {
-    }
+	protected void updatePattern() {
+	}
 }

@@ -9,31 +9,31 @@ import com.puc.soa.RenderView;
 
 public class TestStage extends Stage {
 
-    public TestStage(AuroraContext context, RenderView renderer) {
-        super(context, renderer);
+	public TestStage(AuroraContext context, RenderView renderer) {
+		super(context, renderer, 0);
 
-        FirstBoss foe = new FirstBoss(context, 10000);
-        addFoeAtTime(foe, 2000);
+		FirstBoss foe = new FirstBoss(context, 10000);
+		addFoeAtTime(foe, 2000);
 
-        prepare();
-    }
+		prepare();
+	}
 
-    @Override
-    public Audio getStageTheme() {
-        // TODO Auto-generated method stub
-        return mContext.getAssets().stage1_audio;
-    }
+	@Override
+	public Audio getStageTheme() {
+		// TODO Auto-generated method stub
+		return mContext.getAssets().stage1_audio;
+	}
 
-    @Override
-    public Audio getBossTheme() {
-        // TODO Auto-generated method stub
-        return mContext.getAssets().boss1_theme;
-    }
+	@Override
+	public Audio getBossTheme() {
+		// TODO Auto-generated method stub
+		return mContext.getAssets().boss1_theme;
+	}
 
-    @Override
-    public Bitmap getBackground() {
-        // TODO Auto-generated method stub
-        return mContext.getAssets().stage2Background;
-    }
+	@Override
+	public Bitmap getBackground() {
+		// TODO Auto-generated method stub
+		return mContext.getAssets().stage2Background;
+	}
 
 }

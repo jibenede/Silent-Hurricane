@@ -14,82 +14,77 @@ import com.puc.soa.RenderView;
 
 public class Stage1 extends Stage {
 
-    public Stage1(AuroraContext context, RenderView renderer) {
-        super(context, renderer);
+	public Stage1(AuroraContext context, RenderView renderer) {
+		super(context, renderer, 1);
 
-        for (int i = 0; i < 10; i++) {
-            StalkerA foe = new StalkerA(context, 5, StalkerA.Origin.BOTTOM_LEFT);
-            addFoeAtTime(foe, 500 * i);
-        }
+		for (int i = 0; i < 10; i++) {
+			StalkerA foe = new StalkerA(context, 5, StalkerA.Origin.BOTTOM_LEFT);
+			addFoeAtTime(foe, 500 * i);
+		}
 
-        for (int i = 0; i < 10; i++) {
-            StalkerA foe = new StalkerA(context, 5,
-                    StalkerA.Origin.BOTTOM_RIGHT);
-            addFoeAtTime(foe, 7000 + 500 * i);
-        }
+		for (int i = 0; i < 10; i++) {
+			StalkerA foe = new StalkerA(context, 5, StalkerA.Origin.BOTTOM_RIGHT);
+			addFoeAtTime(foe, 7000 + 500 * i);
+		}
 
-        int xPos[] = { 200, 600, 350, 150, 650, 400, 250, 550, 100, 180, 540,
-                470, 500, 300, 240, 600, 350, 150, 650, 400, 250, 550, 100 };
-        for (int i = 0; i < xPos.length; i++) {
-            PredatorA foe = new PredatorA(context, 7, xPos[i]);
-            addFoeAtTime(foe, 15000 + 1000 * i);
-        }
+		int xPos[] = { 200, 600, 350, 150, 650, 400, 250, 550, 100, 180, 540, 470, 500, 300, 240,
+				600, 350, 150, 650, 400, 250, 550, 100 };
+		for (int i = 0; i < xPos.length; i++) {
+			PredatorA foe = new PredatorA(context, 7, xPos[i]);
+			addFoeAtTime(foe, 15000 + 1000 * i);
+		}
 
-        for (int i = 0; i < 10; i++) {
-            StalkerA foe = new StalkerA(context, 5, StalkerA.Origin.BOTTOM_LEFT);
-            addFoeAtTime(foe, 35000 + 500 * i);
-        }
+		for (int i = 0; i < 10; i++) {
+			StalkerA foe = new StalkerA(context, 5, StalkerA.Origin.BOTTOM_LEFT);
+			addFoeAtTime(foe, 35000 + 500 * i);
+		}
 
-        Dart dart = new Dart(context, 150);
-        dart.setPositions(Globals.CANVAS_WIDTH / 2 - dart.mBitmap.getWidth()
-                / 2, -dart.mBitmap.getHeight(), Globals.CANVAS_WIDTH / 2
-                - dart.mBitmap.getWidth() / 2, 250);
-        addFoeAtTime(dart, 46000);
+		Dart dart = new Dart(context, 150);
+		dart.setPositions(Globals.CANVAS_WIDTH / 2 - dart.mBitmap.getWidth() / 2,
+				-dart.mBitmap.getHeight(), Globals.CANVAS_WIDTH / 2 - dart.mBitmap.getWidth() / 2,
+				250);
+		addFoeAtTime(dart, 46000);
 
-        dart = new Dart(context, 150);
-        dart.setPositions(Globals.CANVAS_WIDTH / 3 - dart.mBitmap.getWidth()
-                / 2, -dart.mBitmap.getHeight(), Globals.CANVAS_WIDTH / 3
-                - dart.mBitmap.getWidth() / 2, 250);
-        addFoeAtTime(dart, 48000);
+		dart = new Dart(context, 150);
+		dart.setPositions(Globals.CANVAS_WIDTH / 3 - dart.mBitmap.getWidth() / 2,
+				-dart.mBitmap.getHeight(), Globals.CANVAS_WIDTH / 3 - dart.mBitmap.getWidth() / 2,
+				250);
+		addFoeAtTime(dart, 48000);
 
-        dart = new Dart(context, 150);
-        dart.setPositions(
-                2 * Globals.CANVAS_WIDTH / 3 - dart.mBitmap.getWidth() / 2,
-                -dart.mBitmap.getHeight(), 2 * Globals.CANVAS_WIDTH / 3
-                        - dart.mBitmap.getWidth() / 2, 250);
-        addFoeAtTime(dart, 48000);
+		dart = new Dart(context, 150);
+		dart.setPositions(2 * Globals.CANVAS_WIDTH / 3 - dart.mBitmap.getWidth() / 2,
+				-dart.mBitmap.getHeight(), 2 * Globals.CANVAS_WIDTH / 3 - dart.mBitmap.getWidth()
+						/ 2, 250);
+		addFoeAtTime(dart, 48000);
 
-        for (int i = 0; i < 10; i++) {
-            Stingray foe1 = new Stingray(context, 10, 40,
-                    Stingray.Direction.RIGHT);
-            Stingray foe2 = new Stingray(context, 10, 120,
-                    Stingray.Direction.LEFT);
-            Stingray foe3 = new Stingray(context, 10, 200,
-                    Stingray.Direction.RIGHT);
-            addFoeAtTime(foe1, 50000 + 2000 * i);
-            addFoeAtTime(foe2, 50000 + 2000 * i);
-            addFoeAtTime(foe3, 50000 + 2000 * i);
-        }
+		for (int i = 0; i < 10; i++) {
+			Stingray foe1 = new Stingray(context, 10, 40, Stingray.Direction.RIGHT);
+			Stingray foe2 = new Stingray(context, 10, 120, Stingray.Direction.LEFT);
+			Stingray foe3 = new Stingray(context, 10, 200, Stingray.Direction.RIGHT);
+			addFoeAtTime(foe1, 50000 + 2000 * i);
+			addFoeAtTime(foe2, 50000 + 2000 * i);
+			addFoeAtTime(foe3, 50000 + 2000 * i);
+		}
 
-        BossA boss = new BossA(context, 2200);
-        addFoeAtTime(boss, 74000);
+		BossA boss = new BossA(context, 2200);
+		addFoeAtTime(boss, 74000);
 
-        prepare();
-    }
+		prepare();
+	}
 
-    @Override
-    public Audio getStageTheme() {
-        return mContext.getAssets().stage1_audio;
-    }
+	@Override
+	public Audio getStageTheme() {
+		return mContext.getAssets().stage1_audio;
+	}
 
-    @Override
-    public Audio getBossTheme() {
-        return mContext.getAssets().boss1_theme;
-    }
+	@Override
+	public Audio getBossTheme() {
+		return mContext.getAssets().boss1_theme;
+	}
 
-    @Override
-    public Bitmap getBackground() {
-        return mContext.getAssets().stage2Background;
-    }
+	@Override
+	public Bitmap getBackground() {
+		return mContext.getAssets().stage2Background;
+	}
 
 }

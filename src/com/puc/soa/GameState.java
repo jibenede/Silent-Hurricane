@@ -14,166 +14,170 @@ import com.puc.soa.utils.CircularArray;
 import com.puc.soa.utils.Utils;
 
 public class GameState {
-    private static final int POWERUP_INTERVAL = 20000;
+	private static final int POWERUP_INTERVAL = 20000;
 
-    private AuroraContext mContext;
-    private AssetsHolder mAssets;
+	public AuroraContext mContext;
+	private AssetsHolder mAssets;
 
-    public Player mShip;
+	public Player mShip;
 
-    public BulletArray mEnemyBullets;
-    public BulletArray mPlayerBullets;
-    public CircularArray mSpecialBullets;
+	public BulletArray mEnemyBullets;
+	public BulletArray mPlayerBullets;
+	public CircularArray mSpecialBullets;
 
-    public long mScore;
+	public long mScore;
 
-    public CircularArray mEnemies;
-    public CircularArray mAnimations;
-    public CircularArray mPowerups;
+	public CircularArray mEnemies;
+	public CircularArray mAnimations;
+	public CircularArray mPowerups;
 
-    public Bullet mBullet;
+	public Bullet mBullet;
 
-    private Stage mCurrentStage;
+	private Stage mCurrentStage;
 
-    public boolean mBombActivated;
+	public boolean mBombActivated;
 
-    private long mTimeOfLastBomb;
-    private long mTimeForNextPowerup;
-    public long mTimeWhenBossWasDefeated;
+	private long mTimeOfLastBomb;
+	private long mTimeForNextPowerup;
+	public long mTimeWhenBossWasDefeated;
 
-    private long mTicks;
+	private long mTicks;
 
-    public GameState(Context context, AssetsHolder assets) {
-        mAssets = assets;
+	public GameState(Context context, AssetsHolder assets, PersistanceManager manager) {
+		mAssets = assets;
 
-        mContext = new AuroraContext(context, this, assets);
+		mContext = new AuroraContext(context, this, assets, manager);
 
-        mEnemyBullets = new BulletArray(mContext, Globals.BULLET_LIMIT);
-        mPlayerBullets = new BulletArray(mContext, 200);
-        mSpecialBullets = new CircularArray(100);
+		mEnemyBullets = new BulletArray(mContext, Globals.BULLET_LIMIT);
+		mPlayerBullets = new BulletArray(mContext, 200);
+		mSpecialBullets = new CircularArray(100);
 
-        mShip = new Player(mContext);
+		mShip = new Player(mContext);
 
-        mEnemies = new CircularArray(Globals.ENEMY_LIMIT);
-        mAnimations = new CircularArray(Globals.ANIMATIONS_LIMIT);
-        mPowerups = new CircularArray(10);
+		mEnemies = new CircularArray(Globals.ENEMY_LIMIT);
+		mAnimations = new CircularArray(Globals.ANIMATIONS_LIMIT);
+		mPowerups = new CircularArray(10);
 
-        mBullet = new Bullet(mContext);
+		mBullet = new Bullet(mContext);
 
-        reset();
-    }
+		reset();
+	}
 
-    public void reset() {
-        mEnemyBullets.emptyArray();
-        mPlayerBullets.emptyArray();
-        mSpecialBullets.emptyArray();
-        mAnimations.emptyArray();
-        mEnemies.emptyArray();
-        mPowerups.emptyArray();
+	public void reset() {
+		mEnemyBullets.emptyArray();
+		mPlayerBullets.emptyArray();
+		mSpecialBullets.emptyArray();
+		mAnimations.emptyArray();
+		mEnemies.emptyArray();
+		mPowerups.emptyArray();
 
-        mTicks = 0;
-        mTimeOfLastBomb = 0;
-        mTimeForNextPowerup = POWERUP_INTERVAL;
-        mScore = 0;
-        mBombActivated = false;
-        mTimeWhenBossWasDefeated = 0;
+		mTicks = 0;
+		mTimeOfLastBomb = 0;
+		mTimeForNextPowerup = POWERUP_INTERVAL;
+		mScore = 0;
+		mBombActivated = false;
+		mTimeWhenBossWasDefeated = 0;
 
-        mShip.reset();
-    }
+		mShip.reset();
+		if (mCurrentStage != null) {
+			mCurrentStage.reset();
+		}
 
-    public void bossDefeated() {
-        mTimeWhenBossWasDefeated = mTicks;
-    }
+	}
 
-    public Stage getCurrentStage() {
-        return mCurrentStage;
-    }
+	public void bossDefeated() {
+		mTimeWhenBossWasDefeated = mTicks;
+	}
 
-    public void setCurrentStage(Stage stage) {
-        mCurrentStage = stage;
-    }
+	public Stage getCurrentStage() {
+		return mCurrentStage;
+	}
 
-    public void setDestination(int x, int y) {
-        mShip.setDestination(x, y);
-    }
+	public void setCurrentStage(Stage stage) {
+		mCurrentStage = stage;
+	}
 
-    public void update(long interval) {
-        mTicks += interval;
+	public void setDestination(int x, int y) {
+		mShip.setDestination(x, y);
+	}
 
-        mTimeForNextPowerup -= interval;
-        if (mTimeForNextPowerup < 0 && !mCurrentStage.hasBossAppeared()) {
-            Powerup powerup = new Powerup(mContext,
-                    50 + Utils.sRandom.nextInt(Globals.CANVAS_WIDTH - 100));
-            mPowerups.add(powerup);
+	public void update(long interval) {
+		mTicks += interval;
 
-            mTimeForNextPowerup = POWERUP_INTERVAL;
-        }
+		mTimeForNextPowerup -= interval;
+		if (mTimeForNextPowerup < 0 && !mCurrentStage.hasBossAppeared()) {
+			Powerup powerup = new Powerup(mContext,
+					50 + Utils.sRandom.nextInt(Globals.CANVAS_WIDTH - 100));
+			mPowerups.add(powerup);
 
-        if (mBombActivated) {
-            animateBomb();
-            animateBomb();
-            if (mTicks - mTimeOfLastBomb > 1000) {
-                mBombActivated = false;
-            }
-        }
+			mTimeForNextPowerup = POWERUP_INTERVAL;
+		}
 
-        mShip.update(interval);
+		if (mBombActivated) {
+			animateBomb();
+			animateBomb();
+			if (mTicks - mTimeOfLastBomb > 1000) {
+				mBombActivated = false;
+			}
+		}
 
-        for (int i = 0; i < mEnemies.size(); i++) {
-            mEnemies.get(i).update(interval);
-        }
+		mShip.update(interval);
 
-        for (int i = 0; i < mEnemyBullets.size(); i++) {
-            mEnemyBullets.getBullet(i).update(interval);
-        }
+		for (int i = 0; i < mEnemies.size(); i++) {
+			mEnemies.get(i).update(interval);
+		}
 
-        for (int i = 0; i < mPlayerBullets.size(); i++) {
-            mPlayerBullets.getBullet(i).update(interval);
-        }
+		for (int i = 0; i < mEnemyBullets.size(); i++) {
+			mEnemyBullets.getBullet(i).update(interval);
+		}
 
-        for (int i = 0; i < mSpecialBullets.size(); i++) {
-            mSpecialBullets.get(i).update(interval);
-        }
+		for (int i = 0; i < mPlayerBullets.size(); i++) {
+			mPlayerBullets.getBullet(i).update(interval);
+		}
 
-        for (int i = 0; i < mAnimations.size(); i++) {
-            mAnimations.get(i).update(interval);
-        }
+		for (int i = 0; i < mSpecialBullets.size(); i++) {
+			mSpecialBullets.get(i).update(interval);
+		}
 
-        for (int i = 0; i < mPowerups.size(); i++) {
-            mPowerups.get(i).update(interval);
-        }
+		for (int i = 0; i < mAnimations.size(); i++) {
+			mAnimations.get(i).update(interval);
+		}
 
-        mEnemies.clean();
-        mEnemyBullets.clean();
-        mPlayerBullets.clean();
-        mSpecialBullets.clean();
-        mAnimations.clean();
-    }
+		for (int i = 0; i < mPowerups.size(); i++) {
+			mPowerups.get(i).update(interval);
+		}
 
-    private void animateBomb() {
-        int x = -150 + Utils.sRandom.nextInt(Globals.CANVAS_WIDTH);
-        int y = -150 + Utils.sRandom.nextInt(Globals.CANVAS_HEIGHT);
-        Animation a = new Animation(mContext, mAssets.bomb, 50, x, y);
-        a.prepare();
-        mAnimations.add(a);
-    }
+		mEnemies.clean();
+		mEnemyBullets.clean();
+		mPlayerBullets.clean();
+		mSpecialBullets.clean();
+		mAnimations.clean();
+	}
 
-    public void detonateBomb() {
-        mEnemyBullets.emptyArray();
-        mSpecialBullets.emptyArray();
-        for (int i = 0; i < mEnemies.size(); i++) {
-            ((Foe) mEnemies.get(i)).bomb();
-        }
+	private void animateBomb() {
+		int x = -150 + Utils.sRandom.nextInt(Globals.CANVAS_WIDTH);
+		int y = -150 + Utils.sRandom.nextInt(Globals.CANVAS_HEIGHT);
+		Animation a = new Animation(mContext, mAssets.bomb, 50, x, y);
+		a.prepare();
+		mAnimations.add(a);
+	}
 
-        mBombActivated = true;
-        mTimeOfLastBomb = mTicks;
-    }
+	public void detonateBomb() {
+		mEnemyBullets.emptyArray();
+		mSpecialBullets.emptyArray();
+		for (int i = 0; i < mEnemies.size(); i++) {
+			((Foe) mEnemies.get(i)).bomb();
+		}
 
-    public CircularArray getEnemies() {
-        return mEnemies;
-    }
+		mBombActivated = true;
+		mTimeOfLastBomb = mTicks;
+	}
 
-    public boolean isPlayerContinuing() {
-        return mShip.mStatus != PlayerState.DEFEATED;
-    }
+	public CircularArray getEnemies() {
+		return mEnemies;
+	}
+
+	public boolean isPlayerContinuing() {
+		return mShip.mStatus != PlayerState.DEFEATED;
+	}
 }

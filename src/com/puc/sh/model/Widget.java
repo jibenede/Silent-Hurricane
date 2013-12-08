@@ -9,10 +9,22 @@ public class Widget {
 	public Bitmap mBitmap;
 	private OnTouchListener mListener;
 
+	private int mWidth;
+	private int mHeight;
+
 	public Widget(Bitmap bitmap, int x, int y) {
 		mBitmap = bitmap;
 		X = x;
 		Y = y;
+
+		mWidth = bitmap.getWidth();
+		mHeight = bitmap.getHeight();
+	}
+
+	public Widget(Bitmap bitmap, int x, int y, int width, int height) {
+		this(bitmap, x, y);
+		mWidth = width;
+		mHeight = height;
 	}
 
 	public void setListener(OnTouchListener listener) {
@@ -22,11 +34,13 @@ public class Widget {
 	public void hitTest(MotionEvent event) {
 		float x = event.getX();
 		float y = event.getY();
-		if (x > X && x < X + mBitmap.getWidth() && y > Y && y < Y + mBitmap.getHeight()) {
+
+		if (x > X && x < X + mWidth && y > Y && y < Y + mHeight) {
 			if (mListener != null) {
 				mListener.onTouchEvent(event);
 			}
 		}
+
 	}
 
 	public interface OnTouchListener {

@@ -12,103 +12,113 @@ import com.puc.soa.Globals;
 import com.puc.soa.RenderView;
 
 public class MainScreen extends Screen {
-    private Bitmap mBitmap;
-    private Canvas mCanvas;
+	private Bitmap mBitmap;
+	private Canvas mCanvas;
 
-    private double mAlpha;
+	private double mAlpha;
 
-    private boolean mFading;
-    private long mFadeDuration;
+	private boolean mFading;
+	private long mFadeDuration;
 
-    private Widget mPlayButton;
+	private Widget mButtonPlay;
+	private Widget mButtonTutorial;
 
-    public MainScreen(AuroraContext context, RenderView renderer) {
-        super(context, renderer);
+	public MainScreen(AuroraContext context, RenderView renderer) {
+		super(context, renderer);
 
-        mPlayButton = new Widget(mContext.getAssets().buttonPlay,
-                Globals.CANVAS_WIDTH / 2
-                        - mContext.getAssets().buttonPlay.getWidth() / 2,
-                Globals.CANVAS_HEIGHT / 2
-                        - mContext.getAssets().buttonPlay.getHeight() / 2);
-        mPlayButton.setListener(new OnTouchListener() {
-            public void onTouchEvent(MotionEvent event) {
-                StageSelectionScreen screen = new StageSelectionScreen(
-                        mContext, mRenderer);
-                mRenderer.transitionTo(screen);
-            }
-        });
-        mAlpha = 255;
-    }
+		mButtonPlay = new Widget(mContext.getAssets().buttonPlay, Globals.CANVAS_WIDTH / 2
+				- mContext.getAssets().buttonPlay.getWidth() / 2, Globals.CANVAS_HEIGHT / 2
+				- mContext.getAssets().buttonPlay.getHeight() / 2);
+		mButtonPlay.setListener(new OnTouchListener() {
+			@Override
+			public void onTouchEvent(MotionEvent event) {
+				StageSelectionScreen screen = new StageSelectionScreen(mContext, mRenderer);
+				mRenderer.transitionTo(screen);
+			}
+		});
 
-    public void reset() {
-        mAlpha = 255;
-        mFading = false;
-        mFadeDuration = 0;
-    }
+		mButtonTutorial = new Widget(mContext.getAssets().buttonTutorial, Globals.CANVAS_WIDTH / 2
+				- mContext.getAssets().buttonTutorial.getWidth() / 2, Globals.CANVAS_HEIGHT / 2
+				+ mContext.getAssets().buttonTutorial.getHeight() / 2 + 50);
+		mButtonTutorial.setListener(new OnTouchListener() {
+			@Override
+			public void onTouchEvent(MotionEvent event) {
+				TutorialScreen screen = new TutorialScreen(mContext, mRenderer);
+				mRenderer.transitionTo(screen);
+			}
+		});
 
-    @Override
-    public Bitmap getBitmap() {
-        if (mBitmap == null) {
-            mBitmap = Bitmap.createBitmap(Globals.CANVAS_WIDTH,
-                    Globals.CANVAS_HEIGHT, Bitmap.Config.ARGB_8888);
-            mCanvas = new Canvas(mBitmap);
-            drawCanvas();
-        }
+		mAlpha = 255;
+	}
 
-        if (mFading) {
-            drawCanvas();
-        }
+	public void reset() {
+		mAlpha = 255;
+		mFading = false;
+		mFadeDuration = 0;
+	}
 
-        return mBitmap;
-    }
+	@Override
+	public Bitmap getBitmap() {
+		if (mBitmap == null) {
+			mBitmap = Globals.ScreenBitmap;
+			mCanvas = new Canvas(mBitmap);
+			drawCanvas();
+		}
 
-    private void drawCanvas() {
-        int alpha = (int) Math.max(0, mAlpha);
+		if (mFading) {
+			drawCanvas();
+		}
 
-        mCanvas.drawRGB(0, 0, 0);
+		return mBitmap;
+	}
 
-        Paint paint = new Paint();
-        paint.setAlpha(alpha);
+	private void drawCanvas() {
+		int alpha = (int) Math.max(0, mAlpha);
 
-        mCanvas.drawBitmap(mContext.getAssets().mainBackground, 0, 0, paint);
-        mCanvas.drawBitmap(mPlayButton.mBitmap, mPlayButton.X, mPlayButton.Y,
-                paint);
-    }
+		mCanvas.drawRGB(0, 0, 0);
 
-    @Override
-    public void update(long interval) {
-        if (mFading) {
-            mAlpha -= (255.0 * interval / mFadeDuration);
-            if (mAlpha <= 0) {
-                mAlpha = 0;
-                mFading = false;
-                onFadeFinished();
-            }
-        }
-    }
+		Paint paint = new Paint();
+		paint.setAlpha(alpha);
 
-    private void onFadeFinished() {
-        StageSelectionScreen screen = new StageSelectionScreen(mContext,
-                mRenderer);
-        mRenderer.transitionTo(screen);
-    }
+		mCanvas.drawBitmap(mContext.getAssets().mainBackground, 0, 0, paint);
+		mCanvas.drawBitmap(mButtonPlay.mBitmap, mButtonPlay.X, mButtonPlay.Y, paint);
+		mCanvas.drawBitmap(mButtonTutorial.mBitmap, mButtonTutorial.X, mButtonTutorial.Y, paint);
+	}
 
-    /**
-     * Starts a fading effect on this screen. All subsequent drawing will be
-     * applied an alpha.
-     * 
-     * @param duration The duration in milliseconds this fade effect should
-     *            take.
-     */
-    public void fade(long duration) {
-        mFading = true;
-        mFadeDuration = duration;
-    }
+	@Override
+	public void update(long interval) {
+		if (mFading) {
+			mAlpha -= (255.0 * interval / mFadeDuration);
+			if (mAlpha <= 0) {
+				mAlpha = 0;
+				mFading = false;
+				onFadeFinished();
+			}
+		}
+	}
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        mPlayButton.hitTest(event);
-        return false;
-    }
+	private void onFadeFinished() {
+		StageSelectionScreen screen = new StageSelectionScreen(mContext, mRenderer);
+		mRenderer.transitionTo(screen);
+	}
+
+	/**
+	 * Starts a fading effect on this screen. All subsequent drawing will be
+	 * applied an alpha.
+	 * 
+	 * @param duration
+	 *            The duration in milliseconds this fade effect should take.
+	 */
+	public void fade(long duration) {
+		mFading = true;
+		mFadeDuration = duration;
+	}
+
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		mButtonPlay.hitTest(event);
+		mButtonTutorial.hitTest(event);
+		return false;
+	}
 
 }
