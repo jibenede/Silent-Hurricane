@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="lib" path="org.eclipse.jdt.annotation_1.0.0.v20120728-095341.jar"/>
-	<classpathentry kind="lib" path="/Users/josebenedetto/android-sdks/platforms/android-17/android.jar">
+	<classpathentry kind="lib" path="C:/Users/Jose/android-sdks/platforms/android-16/android.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="file:/Users/josebenedetto/android-sdks/docs/reference"/>
+			<attribute name="javadoc_location" value="file:/C:/Users/Jose/android-sdks/docs/reference"/>
 		</attributes>
 		<accessrules>
 			<accessrule kind="nonaccessible" pattern="com/android/internal/**"/>
